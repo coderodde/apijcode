@@ -50,7 +50,12 @@ public class UndirectedGraphNode extends Node<UndirectedGraphNode> {
      */
     @Override
     public Iterable<UndirectedGraphNode> parentIterable() {
-        return new NeighbourIterable();
+        return new Iterable<UndirectedGraphNode>() {
+            @Override
+            public Iterator<UndirectedGraphNode> iterator() {
+                return new NeighbourIterator();
+            }
+        };
     }
 
     /**
@@ -92,9 +97,12 @@ public class UndirectedGraphNode extends Node<UndirectedGraphNode> {
     @Override
     public void disconnect(UndirectedGraphNode child) {
         checkNotNull(child, "'child' is 'null'.");
+        checkBelongsToGraph(this);
+        checkBelongsToGraph(child);
         checkSameGraphs(this.getOwnerGraph(), child.getOwnerGraph());
         this.neighbourSet.remove(child);
         child.neighbourSet.remove(this);
+        decEdgeCount();
     }
 
     public boolean isConnectedTo(UndirectedGraphNode child) {
@@ -128,17 +136,13 @@ public class UndirectedGraphNode extends Node<UndirectedGraphNode> {
     
     @Override
     public void clear() {
-        for (UndirectedGraphNode neighbor : neighbourSet) {
-            disconnect(neighbor);
+        final Iterator<UndirectedGraphNode> iterator = iterator();
+        
+        while (iterator.hasNext()) {
+            iterator.next();
+            iterator.remove();
+            this.decEdgeCount();
         }
-    }
-    
-    private class NeighbourIterable implements Iterable<UndirectedGraphNode> {
-
-        @Override
-        public Iterator<UndirectedGraphNode> iterator() {
-            return new NeighbourIterator();
-        }        
     }
     
     private class NeighbourIterator implements Iterator<UndirectedGraphNode> {
@@ -170,7 +174,7 @@ public class UndirectedGraphNode extends Node<UndirectedGraphNode> {
                 throw new NoSuchElementException("There is no current node.");
             }
             
-            UndirectedGraphNode.this.neighbourSet.remove(lastReturned);
+            iterator.remove();
             lastReturned.neighbourSet.remove(UndirectedGraphNode.this);
             lastReturned = null;
         }

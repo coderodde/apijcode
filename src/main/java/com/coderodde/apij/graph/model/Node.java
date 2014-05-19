@@ -38,4 +38,8 @@ public abstract class Node<T extends Node<T>> implements Iterable<T> {
     protected void incEdgeCount() {
         ++ownerGraph.edgeCount;
     }
+    
+    protected void decEdgeCount() {
+        --ownerGraph.edgeCount;
+    }
 }

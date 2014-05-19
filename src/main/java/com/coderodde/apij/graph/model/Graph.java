@@ -135,9 +135,13 @@ public class Graph<T extends Node<T>> implements Iterable<T> {
         ++edgeCount;
     }
     
+    void decrementEdgeCount() {
+        --edgeCount;
+    }
+    
     private class NodeIterator implements Iterator<T> {
-
-        private Iterator<T> iterator = Graph.this.map.values().iterator();
+        
+        private final Iterator<T> iterator = Graph.this.map.values().iterator();
         
         private T lastReturned;
         
