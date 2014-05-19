@@ -145,6 +145,14 @@ public class UndirectedGraphNode extends Node<UndirectedGraphNode> {
         }
     }
     
+    public boolean equals(Object o) {
+        if (!(o instanceof UndirectedGraphNode)) {
+            return false;
+        }
+        
+        return ((UndirectedGraphNode) o).getName().equals(this.getName());
+    }
+    
     private class NeighbourIterator implements Iterator<UndirectedGraphNode> {
 
         /**

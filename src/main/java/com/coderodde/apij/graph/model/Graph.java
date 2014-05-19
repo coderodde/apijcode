@@ -59,6 +59,14 @@ public class Graph<T extends Node<T>> implements Iterable<T> {
         }
     }
     
+    /**
+     * Creates an edge between <code>from</code> and <code>to</code>. In case
+     * <code>T</code> is an <code>DirectedGraphNode</code>, only the edge
+     * <tt>from -> to</tt> is created, not <tt>to -> from</tt>.
+     * 
+     * @param from the tail of an edge.
+     * @param to the head of an edge.
+     */
     public void addEdge(final T from, final T to) {
         checkNotNull(from, "The edge tail is 'null'.");
         checkNotNull(to, "The edge head is 'null'.");
@@ -68,10 +76,47 @@ public class Graph<T extends Node<T>> implements Iterable<T> {
         
         if (from.isConnectedTo(to) == false) {
             from.connectTo(to);
-            ++edgeCount;
         }
     }
     
+    /**
+     * Removes an edge from this graph.
+     * 
+     * @param from the tail of the edge.
+     * @param to the head of the edge.
+     */
+    public void removeEdge(final T from, final T to) {
+        checkNotNull(from, "The tail of an edge is 'null'.");
+        checkNotNull(to, "The head of an edge is 'null'.");
+        checkBelongsToGraph(from, this);
+        checkBelongsToGraph(to, this);
+        
+        if (from.isConnectedTo(to)) {
+            from.disconnect(to);
+            --edgeCount;
+        }
+    }
+    
+    /**
+     * Returns the node with name <code>name</code> or <code>null</code> if 
+     * there is no such.
+     * 
+     * @param name the name of the node to fetch.
+     * 
+     * @return a node or <code>null</code>.
+     */
+    public T getNode(final String name) {
+        return map.get(name);
+    }
+    
+    /**
+     * Queries whether <code>node</code> is in this graph.
+     * 
+     * @param node the node to query.
+     * 
+     * @return <code>true</code> if this graph owns the node <code>node</code>,
+     * <code>false</code> otherwise.
+     */
     public boolean containsNode(final T node) {
         return map.containsKey(node.getName());
     }
@@ -113,32 +158,38 @@ public class Graph<T extends Node<T>> implements Iterable<T> {
         return new NodeIterator();
     }
     
-    /**
-     * Removes an edge from this graph.
-     * 
-     * @param from the tail of the edge.
-     * @param to the head of the edge.
-     */
-    public void removeEdge(final T from, final T to) {
-        checkNotNull(from, "The tail of an edge is 'null'.");
-        checkNotNull(to, "The head of an edge is 'null'.");
-        checkBelongsToGraph(from, this);
-        checkBelongsToGraph(to, this);
-        
-        if (from.isConnectedTo(to)) {
-            from.disconnect(to);
-            --edgeCount;
-        }
+    public void removeNode(final T node) {
+        checkBelongsToGraph(node, this);
+        node.clear();
+        map.remove(node.getName());
     }
     
+    public void clear() {
+        for (final T node : this) {
+            node.clear();
+        }
+        
+        map.clear();
+        edgeCount = 0;
+    }
+    
+    /**
+     * Package private method for incrementing the edge count.
+     */
     void incrementEdgeCount() {
         ++edgeCount;
     }
     
+    /**
+     * Package private method for decrementing the edge count.
+     */
     void decrementEdgeCount() {
         --edgeCount;
     }
     
+    /**
+     * This inner class implements an iterator over this graph's nodes.
+     */
     private class NodeIterator implements Iterator<T> {
         
         private final Iterator<T> iterator = Graph.this.map.values().iterator();
