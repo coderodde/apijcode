@@ -1,5 +1,7 @@
 package com.coderodde.apij.util;
 
+import com.coderodde.apij.graph.model.Graph;
+import com.coderodde.apij.graph.model.Node;
 import java.util.Random;
 
 /**
@@ -36,7 +38,7 @@ public class Utils {
         checkMinMax(min, max);
         final Integer[] arr = new Integer[size];
         
-        for (int i = 0; i != size; ++i) {
+        for (int i = 0; i < size; ++i) {
             arr[i] = r.nextInt(max - min + 1) + min;
         }
         
@@ -60,7 +62,7 @@ public class Utils {
             return INDEX_NOT_FOUND;
         }
         
-        for (int i = 0; i != array.length; ++i) {
+        for (int i = 0; i < array.length; ++i) {
             if (array[i].equals(element)) {
                 return i;
             }
@@ -137,6 +139,36 @@ public class Utils {
     public static final void title2(final String text) {
         titleImpl(text, '-');
     }
+    
+    public static final void checkNotNull(final Object reference,
+                                          final String message) {
+        if (reference == null) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+        
+    public static final <T extends Node<T>> void checkBelongsToGraph
+        (final Node<T> node) {
+        if (node.getOwnerGraph() == null) {
+            throw new IllegalStateException(
+                    "The input node does not belong to any graph.");
+        }
+    }
+    
+    public static final <T extends Node<T>> void checkBelongsToGraph
+            (final T node, final Graph<T> graph) {
+        if (graph.containsNode(node) == false) {
+            throw new IllegalStateException(
+                    "The input node does not belong to the input graph.");
+        }
+    }
+        
+    public static final <T extends Node<T>> void checkSameGraphs
+        (final Graph<T> g1, final Graph<T> g2) {
+        if (g1.getName().equals(g2.getName()) == false) {
+            throw new IllegalStateException("The two graphs are not same.");
+        } 
+    }
         
     /**
      * Implements the title printing functionality.
@@ -146,27 +178,17 @@ public class Utils {
      */
     private static final void titleImpl(final String text, final char barChar) {
         // The idiom ">> 1" means divide by two.
-        int before = (BAR_LENGTH - 2 - text.length()) >> 1;
-        
-        if (before < 0) {
-            before = 0;
-        }
-        
-        int after = BAR_LENGTH - 2 - before;
-        
-        if (after < 0) {
-            after = 0;
-        }
-        
+        final int before = (BAR_LENGTH - 2 - text.length()) >> 1;
+        final int after = BAR_LENGTH - 2 - before;
         final StringBuilder sb = new StringBuilder();
         
-        for (int i = 0; i != before; ++i) {
+        for (int i = 0; i < before; ++i) {
             sb.append(barChar);
         }
         
         sb.append(' ').append(text).append(' ');
         
-        for (int i = 0; i != after; ++i) {
+        for (int i = 0; i < after; ++i) {
             sb.append(barChar);
         }
         
