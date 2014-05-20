@@ -20,6 +20,7 @@ public class UndirectedGraphNodeTest {
     private UndirectedGraphNode c;
     private UndirectedGraphNode d;
     private UndirectedGraphNode e;
+    private UndirectedGraphNode x;
     private Graph<UndirectedGraphNode> g;
     
     @Before
@@ -29,6 +30,7 @@ public class UndirectedGraphNodeTest {
         c = new UndirectedGraphNode("C");
         d = new UndirectedGraphNode("D");
         e = new UndirectedGraphNode("E");
+        x = new UndirectedGraphNode("X");
         
         g = new Graph("Graph");
         
@@ -85,6 +87,16 @@ public class UndirectedGraphNodeTest {
         
         assertFalse(a.isConnectedTo(c));
         assertFalse(c.isConnectedTo(a));
+        
+        assertEquals(1, g.edges());
+        
+        a.connectTo(b);
+        
+        assertEquals(1, g.edges());
+        
+        b.connectTo(a);
+        
+        assertEquals(1, g.edges());
     }
 
     @Test
@@ -147,4 +159,45 @@ public class UndirectedGraphNodeTest {
         assertEquals(0, g.edges());
     }
     
+    @Test(expected = NullPointerException.class)
+    public void constructorWorksOnlyWithName() {
+        new UndirectedGraphNode(null);
+    }
+    
+    @Test(expected = NullPointerException.class)
+    public void cannotConnectToNull() {
+        a.connectTo(null);
+    }
+    
+    @Test(expected = IllegalStateException.class)
+    public void firstNodeMustBelongToGraph() {
+        x.connectTo(a);
+    }
+    
+    @Test(expected = IllegalStateException.class)
+    public void secondNodeMustBelongToGraph() {
+        a.connectTo(x);
+    }
+    
+    @Test(expected = IllegalStateException.class)
+    public void bothNodesMustBeInTheSameGraph() {
+        new Graph("??").add(x);
+        x.connectTo(a);
+    }
+    
+    @Test(expected = NullPointerException.class)
+    public void cannotDisconnectFromNull() {
+        a.disconnect(null);
+    }
+    
+    @Test(expected = IllegalStateException.class) 
+    public void inputNodeMustBelongToAGraphOnDisconnect() {
+        a.connectTo(x);
+    }
+    
+    @Test(expected = IllegalStateException.class)
+    public void nodesBelongToSameGraphOnDisconnect() {
+        new Graph("?").add(x);
+        a.disconnect(x);
+    }
 }

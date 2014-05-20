@@ -143,7 +143,7 @@ public class Utils {
     public static final void checkNotNull(final Object reference,
                                           final String message) {
         if (reference == null) {
-            throw new IllegalArgumentException(message);
+            throw new NullPointerException(message);
         }
     }
         

@@ -39,14 +39,16 @@ public class UndirectedGraphNode extends Node<UndirectedGraphNode> {
         this.neighbourSet = new HashSet<>();
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public String getName() {
         return name;
     }
     
     /**
-     * Returns an <code>Iterable</code> over this node's parents.
-     * 
-     * @return an <code>Iterable</code> over this node's parents.
+     * {@inheritDoc}
      */
     @Override
     public Iterable<UndirectedGraphNode> parentIterable() {
@@ -105,6 +107,7 @@ public class UndirectedGraphNode extends Node<UndirectedGraphNode> {
         decEdgeCount();
     }
 
+    @Override
     public boolean isConnectedTo(UndirectedGraphNode child) {
         return neighbourSet.contains(child);
     }
@@ -129,6 +132,7 @@ public class UndirectedGraphNode extends Node<UndirectedGraphNode> {
     public void setOwnerGraph(Graph<UndirectedGraphNode> graph) {
         if (this.getOwnerGraph() != null) {
             this.clear();
+            this.getOwnerGraph().removeNode(this);
         }
         
         this.ownerGraph = graph;
@@ -145,6 +149,7 @@ public class UndirectedGraphNode extends Node<UndirectedGraphNode> {
         }
     }
     
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof UndirectedGraphNode)) {
             return false;

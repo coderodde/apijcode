@@ -62,7 +62,7 @@ public class Graph<T extends Node<T>> implements Iterable<T> {
     /**
      * Creates an edge between <code>from</code> and <code>to</code>. In case
      * <code>T</code> is an <code>DirectedGraphNode</code>, only the edge
-     * <tt>from -> to</tt> is created, not <tt>to -> from</tt>.
+     * <tt>from -&gt; to</tt> is created, not <tt>to -&gt; from</tt>.
      * 
      * @param from the tail of an edge.
      * @param to the head of an edge.
