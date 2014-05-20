@@ -18,6 +18,11 @@ import java.util.Random;
  */
 public class Demo {
    
+    /*
+    
+    new Dijkstra(new DAryHeap()).withSource(...).withTarget(...).search();
+    
+    */
     public static final void main(final String... args) {
         profileBasicAlgorithms();
     }
