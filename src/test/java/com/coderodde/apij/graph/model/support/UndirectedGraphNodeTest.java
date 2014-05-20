@@ -61,6 +61,14 @@ public class UndirectedGraphNodeTest {
         c.connectTo(b);
         
         assertEquals(3, g.edges());
+        
+        Set<UndirectedGraphNode> set = new HashSet<>();
+        
+        for (final UndirectedGraphNode u : a.parentIterable()) {
+            set.add(u);
+        }
+        
+        assertEquals(2, set.size());
     }
 
     @Test
@@ -199,5 +207,10 @@ public class UndirectedGraphNodeTest {
     public void nodesBelongToSameGraphOnDisconnect() {
         new Graph("?").add(x);
         a.disconnect(x);
+    }
+    
+    public void testEquals() {
+        UndirectedGraphNode xx = new UndirectedGraphNode("B");
+        assertTrue(xx.equals(b));
     }
 }

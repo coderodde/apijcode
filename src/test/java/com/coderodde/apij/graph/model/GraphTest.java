@@ -31,6 +31,11 @@ public class GraphTest {
         c = new UndirectedGraphNode("3");
     }
     
+    @Test(expected = NullPointerException.class) 
+    public void nullNameNotAllowedInConstructor() {
+        new Graph(null);
+    }
+    
     @Test
     public void testAdd() {
         g.add(a);
@@ -41,6 +46,10 @@ public class GraphTest {
         
         assertFalse(g.containsNode(b));
         assertFalse(gg.containsNode(a));
+        
+        g.add(a);
+        assertTrue(g.containsNode(a));
+        assertEquals(1, g.size());
     }
 
     @Test
@@ -55,6 +64,12 @@ public class GraphTest {
         
         assertTrue(a.isConnectedTo(c));
         assertTrue(c.isConnectedTo(a));
+        
+        assertEquals(1, g.edges());
+        
+        g.addEdge(c, a);
+        
+        assertEquals(1, g.edges());
     }
 
     @Test
@@ -81,6 +96,7 @@ public class GraphTest {
         g.add(b);
         
         assertEquals(g.getNode("2"), b);
+        assertNull(g.getNode("HABABABÄWABA"));
     }
 
     @Test
@@ -150,5 +166,106 @@ public class GraphTest {
         assertTrue(set.contains(a));
         assertTrue(set.contains(c));
         assertFalse(set.contains(b));
+    }
+    
+    @Test
+    public void testRemoveNode() {
+        g.add(a);
+        g.add(b);
+        
+        assertTrue(g.containsNode(a));
+        assertTrue(g.containsNode(b));
+        
+        assertEquals(0, g.edges());
+        assertFalse(g.containsNode(c));
+        
+        g.addEdge(a, b);
+        
+        assertEquals(1, g.edges());
+        
+        g.removeNode(b);
+        
+        assertEquals(0, g.edges());
+        assertFalse(g.containsNode(b));
+        assertTrue(g.containsNode(a));
+    }
+    
+    public void testClear() {
+        g.add(a);
+        g.add(b);
+        g.add(c);
+        
+        g.addEdge(a, b);
+        b.connectTo(c);
+        
+        assertEquals(2, g.edges());
+        assertEquals(3, g.size());
+        
+        g.clear();
+        
+        assertEquals(0, g.edges());
+        assertEquals(0, g.size());
+    }
+    
+    @Test(expected = NullPointerException.class)
+    public void testAddEdgeFirstArgNotNull() {
+        g.addEdge(null, a);
+    }
+    
+    @Test(expected = NullPointerException.class)
+    public void testAddEdgeSecondArgNotNull() {
+        g.addEdge(a, null);
+    }
+    
+    @Test(expected = IllegalStateException.class)
+    public void firstArgNotInGraph() {
+        g.add(c);
+        g.addEdge(a, c);
+    }
+    
+    @Test(expected = IllegalStateException.class)
+    public void secondArgNotInGraph() {
+        g.add(a);
+        g.addEdge(a, c);
+    }
+    
+    @Test(expected = IllegalStateException.class)
+    public void differentGraphs() {
+        g.add(a);
+        gg.add(c);
+        
+        g.addEdge(a, c);
+    }
+    
+    @Test(expected = NullPointerException.class)
+    public void testRemoveEdgeFirstArgMayNotBeNull() {
+        g.add(a);
+        g.removeEdge(null, a);
+    }
+    
+    @Test(expected = NullPointerException.class)
+    public void testRemoveEdgeSecondArgMayNotBeNull() {
+        g.add(b);
+        g.removeEdge(b, null);
+    }
+    
+    @Test(expected = IllegalStateException.class)
+    public void testRemoveEdgeFirstArgMustBelongToGraph() {
+        g.add(b);
+        g.removeEdge(a, b);
+    }
+    
+    @Test(expected = IllegalStateException.class)
+    public void testRemoveEdgeSecondArgMustBelongToGraph() {
+        g.add(a);
+        g.removeEdge(a, b);
+    }
+    
+    @Test(expected = IllegalStateException.class)
+    public void testRemoveEdgeNoOutsiderGraphs() {
+        g.add(a);
+        gg.add(b);
+        
+        g.addEdge(a, b);
     }
 }
