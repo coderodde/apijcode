@@ -1,10 +1,10 @@
 package com.coderodde.apij.graph.path;
 
 import com.coderodde.apij.graph.model.Node;
+import com.coderodde.apij.graph.model.WeightFunction;
 import static com.coderodde.apij.util.Utils.checkNotNull;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
 
 /**
  * This class represents an acyclic path in a graph.
@@ -22,12 +22,12 @@ public class Path<T extends Node<T>> implements Iterable<T> {
     /**
      * The list holding the nodes of a path.
      */
-    private LinkedList<T> path;
+    private final LinkedList<T> path;
     
     /**
      * Construct an empty path.
      */
-    public void Path() {
+    public Path() {
         this.path = new LinkedList<>(); 
     }
     
@@ -60,6 +60,16 @@ public class Path<T extends Node<T>> implements Iterable<T> {
      */
     public boolean exists() {
         return path.size() > 0;
+    }
+    
+    public double getLength(final WeightFunction<T> wf) {
+        double len = 0;
+        
+        for (int i = 0; i < size() - 1; ++i) {
+            len += wf.get(get(i), get(i + 1));
+        }
+        
+        return len;
     }
     
     @Override

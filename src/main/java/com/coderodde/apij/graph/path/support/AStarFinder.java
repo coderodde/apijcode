@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class AStarFinder<T extends Node<T>>
-extends PathFinder<T> {
+extends PathFinder<T, AStarFinder<T>> {
     
     /**
      * This is the "open set". It contains the discovered, but not expanded 
@@ -106,5 +106,10 @@ extends PathFinder<T> {
         }
         
         return Path.NO_PATH;
+    }
+
+    @Override
+    public AStarFinder<T> findPath() {
+        return this;
     }
 }

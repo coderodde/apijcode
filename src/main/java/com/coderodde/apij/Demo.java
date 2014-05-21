@@ -2,11 +2,11 @@ package com.coderodde.apij;
 
 import com.coderodde.apij.graph.model.Graph;
 import com.coderodde.apij.graph.model.WeightFunction;
-import com.coderodde.apij.graph.model.support.DefaultWeightFunction;
 import com.coderodde.apij.graph.model.support.UndirectedGraphNode;
 import com.coderodde.apij.graph.path.HeuristicFunction;
 import com.coderodde.apij.graph.path.Layout;
 import com.coderodde.apij.graph.path.Path;
+import com.coderodde.apij.graph.path.PathFinder;
 import com.coderodde.apij.graph.path.support.AStarFinder;
 import com.coderodde.apij.graph.path.support.EuclidianHeuristicFunction;
 import com.coderodde.apij.util.Utils;
@@ -15,7 +15,6 @@ import com.coderodde.apij.util.Utils.Triple;
 import static com.coderodde.apij.util.Utils.findIndexOf;
 import static com.coderodde.apij.util.Utils.findMaximum;
 import static com.coderodde.apij.util.Utils.getRandomIntegerArray;
-import static com.coderodde.apij.util.Utils.getRandomUndirectedGraph;
 import static com.coderodde.apij.util.Utils.title;
 import static com.coderodde.apij.util.Utils.title2;
 import java.util.Random;
@@ -48,9 +47,13 @@ public class Demo {
                 new EuclidianHeuristicFunction<>(data.third);
         
         long ta = System.currentTimeMillis();
+        PathFinder<UndirectedGraphNode, 
+                   AStarFinder<UndirectedGraphNode>> finder = 
+                new AStarFinder<>();
         
         Path<UndirectedGraphNode> path = 
-                new AStarFinder<UndirectedGraphNode>()
+                finder
+                .findPath()
                 .from(data.first.getNode("1"))
                 .to(data.first.getNode("6"))
                 .withWeightFunction(data.second)
@@ -59,9 +62,10 @@ public class Demo {
         
         long tb = System.currentTimeMillis();
         
-        System.out.println("A* time: " + (tb - ta) + " ms.");
+        System.out.println("A* time: " + (tb - ta) + " ms. Path length: " + 
+                           path.getLength(data.second));
         
-        profileBasicAlgorithms();
+//        profileBasicAlgorithms();
     }
     
     

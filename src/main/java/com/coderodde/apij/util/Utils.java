@@ -257,6 +257,7 @@ public class Utils {
             final double dist = hf.estimate(node1, node2);
             
             if (dist < maxDistance) {
+                node1.connectTo(node2);
                 wf.put(node1, node2, lengthFactor * dist);
                 --edges;
             }

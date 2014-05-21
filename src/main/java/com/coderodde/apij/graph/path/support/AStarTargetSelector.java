@@ -1,6 +1,7 @@
 package com.coderodde.apij.graph.path.support;
 
 import com.coderodde.apij.graph.model.Node;
+import com.coderodde.apij.graph.path.TargetSelector;
 import static com.coderodde.apij.util.Utils.checkBelongsToGraph;
 import static com.coderodde.apij.util.Utils.checkNotNull;
 import static com.coderodde.apij.util.Utils.checkSameGraphs;

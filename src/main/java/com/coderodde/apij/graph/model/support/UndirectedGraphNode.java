@@ -158,6 +158,11 @@ public class UndirectedGraphNode extends Node<UndirectedGraphNode> {
         return ((UndirectedGraphNode) o).getName().equals(this.getName());
     }
     
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+    
     private class NeighbourIterator implements Iterator<UndirectedGraphNode> {
 
         /**
