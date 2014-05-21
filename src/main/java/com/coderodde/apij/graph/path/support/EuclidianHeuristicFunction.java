@@ -27,8 +27,22 @@ extends HeuristicFunction<T> {
     
     @Override
     public double estimateFrom(final T from) {
-        Double[] s = layout.get(from).getRef();
-        Double[] t = layout.get(target).getRef();
+        final Double[] s = layout.get(from).getRef();
+        final Double[] t = layout.get(target).getRef();
+        double h = 0.0;
+        
+        for (int i = 0; i < s.length; ++i) {
+            final double delta = s[i] - t[i];
+            h += delta * delta;
+        }
+        
+        return Math.sqrt(h);
+    }
+
+    @Override
+    public double estimate(final T from, final T to) {
+        final Double[] s = layout.get(from).getRef();
+        final Double[] t = layout.get(to).getRef();
         double h = 0.0;
         
         for (int i = 0; i < s.length; ++i) {

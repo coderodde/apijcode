@@ -2,6 +2,15 @@ package com.coderodde.apij.util;
 
 import com.coderodde.apij.graph.model.Graph;
 import com.coderodde.apij.graph.model.Node;
+import com.coderodde.apij.graph.model.WeightFunction;
+import com.coderodde.apij.graph.model.support.DefaultWeightFunction;
+import com.coderodde.apij.graph.model.support.UndirectedGraphNode;
+import com.coderodde.apij.graph.path.HeuristicFunction;
+import com.coderodde.apij.graph.path.Layout;
+import com.coderodde.apij.graph.path.Point;
+import com.coderodde.apij.graph.path.support.EuclidianHeuristicFunction;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -168,6 +177,92 @@ public class Utils {
         if (g1.getName().equals(g2.getName()) == false) {
             throw new IllegalStateException("The two graphs are not same.");
         } 
+    }
+        
+    public static final class Pair<F, S> {
+        public F first;
+        public S second;
+        
+        public Pair() {
+            
+        }
+        
+        public Pair(final F first, final S second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
+        
+    public static final class Triple<F, S, T> {
+        public F first;
+        public S second;
+        public T third;
+        
+        public Triple() {
+            
+        }
+        
+        public Triple(final F first, final S second, final T third) {
+            this.first = first;
+            this.second = second;
+            this.third = third;
+        }
+    }
+    
+    public static final Triple<Graph<UndirectedGraphNode>,
+                      WeightFunction<UndirectedGraphNode>,
+                   HeuristicFunction<UndirectedGraphNode>>
+                    getRandomUndirectedGraph(final String name,
+                                             final int size,
+                                             final float edgeLoadFactor,
+                                             final float lengthFactor,
+                                             final double regionWidth,
+                                             final double regionHeight,
+                                             final double maxDistance,
+                                             final Random r) {
+        final Graph<UndirectedGraphNode> g = new Graph<>(name);
+        final Layout<UndirectedGraphNode> layout = new Layout<>(2);
+        final HeuristicFunction<UndirectedGraphNode> hf =
+                new EuclidianHeuristicFunction<>(layout);
+        
+        for (int i = 0; i < size; ++i) {
+            final UndirectedGraphNode u = new UndirectedGraphNode("" + i);
+            g.add(u);
+            final double x = r.nextDouble() * regionWidth;
+            final double y = r.nextDouble() * regionHeight;
+            layout.put(u, new Point(x, y));
+        }
+        
+        int edges = (int)(size * size * edgeLoadFactor);
+        
+        final List<UndirectedGraphNode> list = new ArrayList<>();
+        final WeightFunction<UndirectedGraphNode> wf = 
+                new DefaultWeightFunction<>();
+        
+        for (final UndirectedGraphNode u : g) {
+            list.add(u);
+        }
+        
+        while (edges > 0) {
+            final int key1 = r.nextInt(g.size());
+            final int key2 = r.nextInt(g.size());
+            
+            if (key1 == key2) {
+                continue;
+            }
+            
+            final UndirectedGraphNode node1 = list.get(key1);
+            final UndirectedGraphNode node2 = list.get(key2);
+            
+            final double dist = hf.estimate(node1, node2);
+            
+            if (dist < maxDistance) {
+                wf.put(node1, node2, lengthFactor * dist);
+                --edges;
+            }
+        }
+        
+        return new Triple<>(g, wf, hf);
     }
         
     /**

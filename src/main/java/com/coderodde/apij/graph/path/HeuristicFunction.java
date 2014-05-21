@@ -27,4 +27,6 @@ public abstract class HeuristicFunction<T extends Node<T>> {
     }
     
     public abstract double estimateFrom(final T from);
+    
+    public abstract double estimate(final T from, final T to);
 }
