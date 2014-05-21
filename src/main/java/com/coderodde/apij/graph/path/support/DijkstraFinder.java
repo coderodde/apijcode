@@ -6,6 +6,7 @@ import com.coderodde.apij.graph.model.Node;
 import com.coderodde.apij.graph.model.WeightFunction;
 import com.coderodde.apij.graph.path.Path;
 import com.coderodde.apij.graph.path.PathFinder;
+import com.coderodde.apij.graph.path.SearchData;
 import static com.coderodde.apij.util.Utils.checkBelongsToGraph;
 import static com.coderodde.apij.util.Utils.checkNotNull;
 import java.util.HashMap;
@@ -14,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class DijkstraFinder<T extends Node<T>>
-extends PathFinder<T, DijkstraFinder<T>> {
+extends PathFinder<T> {
     
     /**
      * This is the "open set". It contains the discovered, but not expanded 
@@ -37,8 +38,6 @@ extends PathFinder<T, DijkstraFinder<T>> {
      */
     private Map<T, T> PARENT = new HashMap<>();
     
-    private T source;
-    
     public DijkstraFinder() {
         // This the default: d-ary heap with d = 2.
         this(new DaryHeap<T, Double>(2));
@@ -50,34 +49,46 @@ extends PathFinder<T, DijkstraFinder<T>> {
         this.OPEN = heap;
     }
     
-    public final DijkstraTargetSelector<T> from(final T source) {
-        checkNotNull(source, "'source' is 'null'.");
-        checkBelongsToGraph(source);
-        this.source = source;
-        return new DijkstraTargetSelector<>(this);
-    }
-    
-    final T getSource() {
-        return source;
-    }
-    
-    Path<T> searchImpl(final T from, 
-                       final T to, 
-                       final WeightFunction<T> wf) {
+    @Override
+    public Path<T> search(SearchData... data) {
+        T source = null;
+        T target = null;
+        WeightFunction<T> wf = null;
+        
+        for (final SearchData sd : data) {
+            switch (sd.getType()) {
+                case SOURCE: 
+                    source = (T) sd.getData();
+                    break;
+                    
+                case TARGET:
+                    target = (T) sd.getData();
+                    break;
+                    
+                case WEIGHT_FUNCTION:
+                    wf = (WeightFunction<T>) sd.getData();
+                    break;
+            }
+        }
+        
+        checkNotNull(source, "'source' is null.");
+        checkNotNull(target, "'target' is null.");
+        checkNotNull(wf, "weight function is null.");
+        
         OPEN.clear();
         CLOSED.clear();
         GSCORE.clear();
         PARENT.clear();
         
-        OPEN.add(from, 0.0);
-        GSCORE.put(from, 0.0);
-        PARENT.put(from, null);
+        OPEN.add(source, 0.0);
+        GSCORE.put(source, 0.0);
+        PARENT.put(source, null);
         
         while (OPEN.isEmpty() == false) {
             final T current = OPEN.extractMinimum();
         
-            if (current.equals(to)) {
-                return constructPath(to, PARENT);
+            if (current.equals(target)) {
+                return constructPath(target, PARENT);
             }
             
             CLOSED.add(current);
@@ -102,10 +113,5 @@ extends PathFinder<T, DijkstraFinder<T>> {
         }
         
         return Path.NO_PATH;
-    }
-
-    @Override
-    public DijkstraFinder<T> findPath() {
-        return this;
     }
 }

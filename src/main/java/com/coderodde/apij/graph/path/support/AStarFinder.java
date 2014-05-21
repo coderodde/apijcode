@@ -7,7 +7,7 @@ import com.coderodde.apij.graph.model.WeightFunction;
 import com.coderodde.apij.graph.path.HeuristicFunction;
 import com.coderodde.apij.graph.path.Path;
 import com.coderodde.apij.graph.path.PathFinder;
-import static com.coderodde.apij.util.Utils.checkBelongsToGraph;
+import com.coderodde.apij.graph.path.SearchData;
 import static com.coderodde.apij.util.Utils.checkNotNull;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class AStarFinder<T extends Node<T>>
-extends PathFinder<T, AStarFinder<T>> {
+extends PathFinder<T> {
     
     /**
      * This is the "open set". It contains the discovered, but not expanded 
@@ -38,8 +38,6 @@ extends PathFinder<T, AStarFinder<T>> {
      */
     private Map<T, T> PARENT = new HashMap<>();
     
-    private T source;
-    
     public AStarFinder() {
         // This the default: d-ary heap with d = 2.
         this(new DaryHeap<T, Double>(2));
@@ -50,38 +48,55 @@ extends PathFinder<T, AStarFinder<T>> {
         heap.clear();
         this.OPEN = heap;
     }
-    
-    public final AStarTargetSelector<T> from(final T source) {
-        checkNotNull(source, "'source' is 'null'.");
-        checkBelongsToGraph(source);
-        this.source = source;
-        return new AStarTargetSelector<>(this);
-    }
-    
-    final T getSource() {
-        return source;
-    }
-    
-    Path<T> searchImpl(final T from, 
-                       final T to, 
-                       final WeightFunction<T> wf,
-                       final HeuristicFunction<T> hf) {
-        hf.setTarget(to);
+
+    @Override
+    public Path<T> search(SearchData... data) {
+        T source = null;
+        T target = null;
+        WeightFunction<T> wf = null;
+        HeuristicFunction<T> hf = null;
+        
+        for (final SearchData sd : data) {
+            switch (sd.getType()) {
+                case SOURCE: 
+                    source = (T) sd.getData();
+                    break;
+                    
+                case TARGET:
+                    target = (T) sd.getData();
+                    break;
+                    
+                case WEIGHT_FUNCTION:
+                    wf = (WeightFunction<T>) sd.getData();
+                    break;
+                    
+                case HEURISTIC_FUNCTION:
+                    hf = (HeuristicFunction<T>) sd.getData();
+                    break;
+            }
+        }
+        
+        checkNotNull(source, "'source' is null.");
+        checkNotNull(target, "'target' is null.");
+        checkNotNull(wf, "weight function is null.");
+        checkNotNull(hf, "heuristic function is null.");
+        
+        hf.setTarget(target);
         
         OPEN.clear();
         CLOSED.clear();
         GSCORE.clear();
         PARENT.clear();
         
-        OPEN.add(from, hf.estimateFrom(from));
-        GSCORE.put(from, 0.0);
-        PARENT.put(from, null);
+        OPEN.add(source, hf.estimateFrom(source));
+        GSCORE.put(source, 0.0);
+        PARENT.put(source, null);
         
         while (OPEN.isEmpty() == false) {
             final T current = OPEN.extractMinimum();
         
-            if (current.equals(to)) {
-                return constructPath(to, PARENT);
+            if (current.equals(target)) {
+                return constructPath(target, PARENT);
             }
             
             CLOSED.add(current);
@@ -106,10 +121,5 @@ extends PathFinder<T, AStarFinder<T>> {
         }
         
         return Path.NO_PATH;
-    }
-
-    @Override
-    public AStarFinder<T> findPath() {
-        return this;
     }
 }
