@@ -17,21 +17,6 @@ import java.util.NoSuchElementException;
 public class DaryHeap<T, P extends Comparable<? super P>> 
 implements PriorityQueue<T, P> {
 
-    @Override
-    public P getPriorityOf(T element) {
-        if (map.containsKey(element)) {
-            throw new NoSuchElementException(
-                    "No element '" + element.toString() + "' in this heap.");
-        }
-        
-        return map.get(element).priority;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     /**
      * A structure holding the elements and their data.
      * 
@@ -248,6 +233,21 @@ implements PriorityQueue<T, P> {
     @Override
     public final DaryHeap<T, P> spawn() {
         return new DaryHeap<>(getDegree(), storage.length);
+    }
+    
+    @Override
+    public P getPriorityOf(T element) {
+        if (map.containsKey(element)) {
+            throw new NoSuchElementException(
+                    "No element '" + element.toString() + "' in this heap.");
+        }
+        
+        return map.get(element).priority;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return size == 0;
     }
     
     /**

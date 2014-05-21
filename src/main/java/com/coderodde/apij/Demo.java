@@ -5,12 +5,17 @@ import com.coderodde.apij.graph.model.WeightFunction;
 import com.coderodde.apij.graph.model.support.DefaultWeightFunction;
 import com.coderodde.apij.graph.model.support.UndirectedGraphNode;
 import com.coderodde.apij.graph.path.HeuristicFunction;
+import com.coderodde.apij.graph.path.Layout;
 import com.coderodde.apij.graph.path.Path;
 import com.coderodde.apij.graph.path.support.AStarFinder;
+import com.coderodde.apij.graph.path.support.EuclidianHeuristicFunction;
+import com.coderodde.apij.util.Utils;
 import static com.coderodde.apij.util.Utils.INDEX_NOT_FOUND;
+import com.coderodde.apij.util.Utils.Triple;
 import static com.coderodde.apij.util.Utils.findIndexOf;
 import static com.coderodde.apij.util.Utils.findMaximum;
 import static com.coderodde.apij.util.Utils.getRandomIntegerArray;
+import static com.coderodde.apij.util.Utils.getRandomUndirectedGraph;
 import static com.coderodde.apij.util.Utils.title;
 import static com.coderodde.apij.util.Utils.title2;
 import java.util.Random;
@@ -26,27 +31,36 @@ import java.util.Random;
 public class Demo {
    
     public static final void main(final String... args) {
-        Graph<UndirectedGraphNode> g = new Graph<>("G");
         
-        g.add(new UndirectedGraphNode("a"));
-        g.add(new UndirectedGraphNode("b"));
+        Triple<Graph<UndirectedGraphNode>,
+      WeightFunction<UndirectedGraphNode>,
+              Layout<UndirectedGraphNode>> data =
+                Utils.getRandomUndirectedGraph("Graph",
+                                               1000,
+                                               0.05f,
+                                               1.3f,
+                                               100.0,
+                                               50.0,
+                                               15.0,
+                                               new Random());
         
-        g.addEdge(g.getNode("a"), g.getNode("b"));
+        HeuristicFunction<UndirectedGraphNode> hf = 
+                new EuclidianHeuristicFunction<>(data.third);
         
-        WeightFunction<UndirectedGraphNode> wf =
-                new DefaultWeightFunction<>();
-        
-        HeuristicFunction<UndirectedGraphNode> hf = null;
-        
-        wf.put(g.getNode("a"), g.getNode("b"), 2);
+        long ta = System.currentTimeMillis();
         
         Path<UndirectedGraphNode> path = 
                 new AStarFinder<UndirectedGraphNode>()
-                .from(g.getNode("a"))
-                .to(g.getNode("b"))
-                .withWeightFunction(wf)
+                .from(data.first.getNode("1"))
+                .to(data.first.getNode("6"))
+                .withWeightFunction(data.second)
                 .withHeuristicFunction(hf)
                 .search();
+        
+        long tb = System.currentTimeMillis();
+        
+        System.out.println("A* time: " + (tb - ta) + " ms.");
+        
         profileBasicAlgorithms();
     }
     

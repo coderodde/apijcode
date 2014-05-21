@@ -211,7 +211,7 @@ public class Utils {
     
     public static final Triple<Graph<UndirectedGraphNode>,
                       WeightFunction<UndirectedGraphNode>,
-                   HeuristicFunction<UndirectedGraphNode>>
+                              Layout<UndirectedGraphNode>>
                     getRandomUndirectedGraph(final String name,
                                              final int size,
                                              final float edgeLoadFactor,
@@ -262,7 +262,7 @@ public class Utils {
             }
         }
         
-        return new Triple<>(g, wf, hf);
+        return new Triple<>(g, wf, layout);
     }
         
     /**
