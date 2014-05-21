@@ -9,9 +9,11 @@ import com.coderodde.apij.graph.path.Path;
 import com.coderodde.apij.graph.path.PathFinder;
 import static com.coderodde.apij.graph.path.PathFinder.from;
 import static com.coderodde.apij.graph.path.PathFinder.to;
+import static com.coderodde.apij.graph.path.PathFinder.withBackwardHeuristicFunction;
 import static com.coderodde.apij.graph.path.PathFinder.withHeuristicFunction;
 import static com.coderodde.apij.graph.path.PathFinder.withWeightFunction;
 import com.coderodde.apij.graph.path.support.AStarFinder;
+import com.coderodde.apij.graph.path.support.BidirectionalAStarFinder;
 import com.coderodde.apij.graph.path.support.BidirectionalDijkstraFinder;
 import com.coderodde.apij.graph.path.support.DijkstraFinder;
 import com.coderodde.apij.graph.path.support.EuclidianHeuristicFunction;
@@ -41,8 +43,8 @@ public class Demo {
       WeightFunction<UndirectedGraphNode>,
               Layout<UndirectedGraphNode>> data =
                 Utils.getRandomUndirectedGraph("Graph",
-                                               10000,
-                                               0.005f,
+                                               40000,
+                                               0.0001f,
                                                1.3f,
                                                100.0,
                                                50.0,
@@ -50,6 +52,9 @@ public class Demo {
                                                new Random());
         
         HeuristicFunction<UndirectedGraphNode> hf = 
+                new EuclidianHeuristicFunction<>(data.third);
+        
+        HeuristicFunction<UndirectedGraphNode> hfb = 
                 new EuclidianHeuristicFunction<>(data.third);
         
         final UndirectedGraphNode source = data.first.getNode("1");
@@ -92,7 +97,21 @@ public class Demo {
         
         tb = System.currentTimeMillis();
         System.out.println("Bidirectional Dijkstra time: " + (tb - ta) + " ms. Path length: " +
-                path2.getLength(data.second));
+                path3.getLength(data.second));
+        
+        ta = System.currentTimeMillis();
+        
+        Path<UndirectedGraphNode> path4 =
+               new BidirectionalAStarFinder<UndirectedGraphNode>()
+                       .search(from(source),
+                               to(target),
+                               withWeightFunction(data.second),
+                               withHeuristicFunction(hf),
+                               withBackwardHeuristicFunction(hfb));
+        
+        tb = System.currentTimeMillis();
+        System.out.println("Bidirectional A* time: " + (tb - ta) + " ms. Path length: " +
+                path4.getLength(data.second));
 //        profileBasicAlgorithms();
     }
     

@@ -4,6 +4,7 @@ import com.coderodde.apij.ds.pq.PriorityQueue;
 import com.coderodde.apij.ds.pq.support.DaryHeap;
 import com.coderodde.apij.graph.model.Node;
 import com.coderodde.apij.graph.model.WeightFunction;
+import com.coderodde.apij.graph.path.HeuristicFunction;
 import com.coderodde.apij.graph.path.Path;
 import com.coderodde.apij.graph.path.PathFinder;
 import com.coderodde.apij.graph.path.SearchData;
@@ -14,7 +15,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class BidirectionalDijkstraFinder<T extends Node<T>> 
+public class BidirectionalAStarFinder<T extends Node<T>> 
 extends PathFinder<T> {
     
     /**
@@ -58,12 +59,16 @@ extends PathFinder<T> {
      */
     private Map<T, T> PARENTB = new HashMap<>();
     
-    public BidirectionalDijkstraFinder() {
+    private HeuristicFunction<T> HFA;
+    
+    private HeuristicFunction<T> HFB;
+    
+    public BidirectionalAStarFinder() {
         // This the default: d-ary heap with d = 2.
         this(new DaryHeap<T, Double>(2));
     }
     
-    public BidirectionalDijkstraFinder(final PriorityQueue<T, Double> heap) {
+    public BidirectionalAStarFinder(final PriorityQueue<T, Double> heap) {
         checkNotNull(heap, "'heap' is 'null'.");
         heap.clear();
         this.OPENA = heap;
@@ -75,6 +80,8 @@ extends PathFinder<T> {
         T source = null;
         T target = null;
         WeightFunction<T> wf = null;
+        HFA = null;
+        HFB = null;
         
         for (final SearchData sd : data) {
             switch (sd.getType()) {
@@ -89,11 +96,24 @@ extends PathFinder<T> {
                 case WEIGHT_FUNCTION:
                     wf = (WeightFunction<T>) sd.getData();
                     break;
+                    
+                case HEURISTIC_FUNCTION:
+                    HFA = (HeuristicFunction<T>) sd.getData();
+                    break;
+                    
+                case HEURISTIC_FUNCTION_BACKWARD:
+                    HFB = (HeuristicFunction<T>) sd.getData();
+                    break;
             }
         }
         
         checkSameGraphs(source, target);
         checkNotNull(wf, "weight function is null.");
+        checkNotNull(HFA, "Forward heuristic function is null.");
+        checkNotNull(HFB, "Backward heuristic function is null.");
+        
+        HFA.setTarget(target);
+        HFB.setTarget(source);
         
         OPENA.clear();
         CLOSEDA.clear();
@@ -105,11 +125,11 @@ extends PathFinder<T> {
         GSCOREB.clear();
         PARENTB.clear();
         
-        OPENA.add(source, 0.0);
+        OPENA.add(source, HFA.estimateFrom(source));
         GSCOREA.put(source, 0.0);
         PARENTA.put(source, null);
         
-        OPENB.add(target, 0.0);
+        OPENB.add(target, HFB.estimateFrom(target));
         GSCOREB.put(target, 0.0);
         PARENTB.put(target, null);
         
@@ -121,10 +141,10 @@ extends PathFinder<T> {
             if (touch != null) {
                 final T topA = OPENA.min();
                 final T topB = OPENB.min();
-                final double ga = OPENA.getPriorityOf(topA);
-                final double gb = OPENB.getPriorityOf(topB);
+                final double fa = OPENA.getPriorityOf(topA);
+                final double fb = OPENB.getPriorityOf(topB);
                 
-                if (ga + gb > m) {
+                if (Math.max(fa, fb) >= m) {
                     return constructPathBidirectional(touch, PARENTA, PARENTB);
                 }
             }
@@ -143,7 +163,7 @@ extends PathFinder<T> {
                     double tmpg = GSCOREA.get(current) + wf.get(current, child);
                     
                     if (GSCOREA.containsKey(child) == false) {
-                        OPENA.add(child, tmpg);
+                        OPENA.add(child, tmpg + HFA.estimateFrom(child));
                         GSCOREA.put(child, tmpg);
                         PARENTA.put(child, current);
                         
@@ -154,7 +174,8 @@ extends PathFinder<T> {
                             }
                         }
                     } else if (tmpg < GSCOREA.get(child)){
-                        OPENA.decreasePriority(child, tmpg);
+                        OPENA.decreasePriority(child, 
+                                               tmpg + HFA.estimateFrom(child));
                         GSCOREA.put(child, tmpg);
                         PARENTA.put(child, current);
                         
@@ -181,7 +202,7 @@ extends PathFinder<T> {
                                   wf.get(parent, current);
                     
                     if (GSCOREB.containsKey(parent) == false) {
-                        OPENB.add(parent, tmpg);
+                        OPENB.add(parent, tmpg + HFB.estimateFrom(parent));
                         GSCOREB.put(parent, tmpg);
                         PARENTB.put(parent, current);
                         
@@ -192,7 +213,8 @@ extends PathFinder<T> {
                             }
                         }
                     } else if (tmpg < GSCOREB.get(parent)) {
-                        OPENB.decreasePriority(parent, tmpg);
+                        OPENB.decreasePriority(parent, 
+                                               tmpg + HFB.estimateFrom(parent));
                         GSCOREB.put(parent, tmpg);
                         PARENTB.put(parent, current);
                         

@@ -30,7 +30,7 @@ public abstract class PathFinder<T extends Node<T>> {
         
     public static final SearchData
         withBackwardHeuristicFunction(final Object backwardHeuristicFunction) {
-        return new SearchData(SearchDataType.HEURISTIC_FUNCTION,
+        return new SearchData(SearchDataType.HEURISTIC_FUNCTION_BACKWARD,
                               backwardHeuristicFunction);
     }
     
@@ -53,6 +53,22 @@ public abstract class PathFinder<T extends Node<T>> {
         constructPathBidirectional(final T touch, 
                                    final Map<T, T> parentMapForward,
                                    final Map<T, T> parentMapBackwards) {
-        return null;    
+        Path<T> path = new Path<>();
+        
+        T current = touch;
+        
+        while (current != null) {
+            path.prependNode(current);
+            current = parentMapForward.get(current);
+        }
+        
+        current = parentMapBackwards.get(touch);
+        
+        while (current != null) {
+            path.appendNode(current);
+            current = parentMapBackwards.get(current);
+        }
+        
+        return path;    
     }
 }
