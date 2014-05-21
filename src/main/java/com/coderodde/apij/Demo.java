@@ -8,6 +8,7 @@ import com.coderodde.apij.graph.path.Layout;
 import com.coderodde.apij.graph.path.Path;
 import com.coderodde.apij.graph.path.PathFinder;
 import com.coderodde.apij.graph.path.support.AStarFinder;
+import com.coderodde.apij.graph.path.support.DijkstraFinder;
 import com.coderodde.apij.graph.path.support.EuclidianHeuristicFunction;
 import com.coderodde.apij.util.Utils;
 import static com.coderodde.apij.util.Utils.INDEX_NOT_FOUND;
@@ -35,8 +36,8 @@ public class Demo {
       WeightFunction<UndirectedGraphNode>,
               Layout<UndirectedGraphNode>> data =
                 Utils.getRandomUndirectedGraph("Graph",
-                                               1000,
-                                               0.05f,
+                                               10000,
+                                               0.005f,
                                                1.3f,
                                                100.0,
                                                50.0,
@@ -46,6 +47,9 @@ public class Demo {
         HeuristicFunction<UndirectedGraphNode> hf = 
                 new EuclidianHeuristicFunction<>(data.third);
         
+        final UndirectedGraphNode source = data.first.getNode("1");
+        final UndirectedGraphNode target = data.first.getNode("6");
+        
         long ta = System.currentTimeMillis();
         PathFinder<UndirectedGraphNode, 
                    AStarFinder<UndirectedGraphNode>> finder = 
@@ -54,8 +58,8 @@ public class Demo {
         Path<UndirectedGraphNode> path = 
                 finder
                 .findPath()
-                .from(data.first.getNode("1"))
-                .to(data.first.getNode("6"))
+                .from(source)
+                .to(target)
                 .withWeightFunction(data.second)
                 .withHeuristicFunction(hf)
                 .search();
@@ -65,6 +69,22 @@ public class Demo {
         System.out.println("A* time: " + (tb - ta) + " ms. Path length: " + 
                            path.getLength(data.second));
         
+        PathFinder<UndirectedGraphNode, 
+                   DijkstraFinder<UndirectedGraphNode>> finder2 =
+                new DijkstraFinder<>();
+        
+        ta = System.currentTimeMillis();
+        
+        Path<UndirectedGraphNode> path2 =
+               finder2.findPath()
+                      .from(source)
+                      .to(target)
+                      .withWeightFunction(data.second)
+                      .search();
+        
+        tb = System.currentTimeMillis();
+        System.out.println("Dijkstra time: " + (tb - ta) + " ms. Path length: " +
+                path2.getLength(data.second));
 //        profileBasicAlgorithms();
     }
     

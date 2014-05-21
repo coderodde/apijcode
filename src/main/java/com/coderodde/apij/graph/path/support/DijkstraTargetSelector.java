@@ -5,27 +5,26 @@ import static com.coderodde.apij.util.Utils.checkBelongsToGraph;
 import static com.coderodde.apij.util.Utils.checkNotNull;
 import static com.coderodde.apij.util.Utils.checkSameGraphs;
 
-public class AStarTargetSelector<T extends Node<T>> {
+public class DijkstraTargetSelector<T extends Node<T>> {
     
-    private final AStarFinder<T> finder;
+    private final DijkstraFinder<T> finder;
     
     private T target;
     
-    AStarTargetSelector(final AStarFinder<T> finder) {
+    DijkstraTargetSelector(final DijkstraFinder<T> finder) {
         checkNotNull(finder, "'finder' is 'null'.");
         this.finder = finder;
     }
     
-    
-    public AStarWeightFunctionSelector<T> to(final T target) {
+    public DijkstraWeightFunctionSelector<T> to(final T target) {
         checkNotNull(target, "'target' is 'null'.");
         checkBelongsToGraph(target);
         checkSameGraphs(target.getOwnerGraph(), getSource().getOwnerGraph());
         this.target = target;
-        return new AStarWeightFunctionSelector<T>(this);
+        return new DijkstraWeightFunctionSelector<T>(this);
     }
     
-    AStarFinder<T> getFinder() {
+    DijkstraFinder<T> getFinder() {
         return finder;
     }
     
