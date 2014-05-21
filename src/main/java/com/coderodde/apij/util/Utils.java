@@ -10,6 +10,7 @@ import com.coderodde.apij.graph.path.Layout;
 import com.coderodde.apij.graph.path.Path;
 import com.coderodde.apij.graph.path.Point;
 import com.coderodde.apij.graph.path.support.EuclidianHeuristicFunction;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -231,7 +232,7 @@ public class Utils {
                                              final double maxDistance,
                                              final Random r) {
         final Graph<UndirectedGraphNode> g = new Graph<>(name);
-        final Layout<UndirectedGraphNode> layout = new Layout<>(2);
+        final Layout<UndirectedGraphNode> layout = new Layout<>();
         final HeuristicFunction<UndirectedGraphNode> hf =
                 new EuclidianHeuristicFunction<>(layout);
         
@@ -240,7 +241,7 @@ public class Utils {
             g.add(u);
             final double x = r.nextDouble() * regionWidth;
             final double y = r.nextDouble() * regionHeight;
-            layout.put(u, new Point(x, y));
+            layout.put(u, new Point2D.Double(x, y));
         }
         
         int edges = (int)(size * size * edgeLoadFactor);
@@ -294,6 +295,12 @@ public class Utils {
         
         return true;
     }
+        
+    public static final void checkPositive(final int i, final String msg) {
+        if (i < 1) {
+            throw new IllegalArgumentException(msg);
+        }
+    }    
                     
     /**
      * Implements the title printing functionality.
