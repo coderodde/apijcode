@@ -178,6 +178,15 @@ public class Utils {
             throw new IllegalStateException("The two graphs are not same.");
         } 
     }
+     
+    public static final <T extends Node<T>> void checkSameGraphs
+            (final T n1, final T n2) {
+        checkNotNull(n1, "'n1' is null.");        
+        checkNotNull(n2, "'n2' is null."); 
+        checkBelongsToGraph(n1);
+        checkBelongsToGraph(n2);
+        checkSameGraphs(n1.getOwnerGraph(), n2.getOwnerGraph());
+    }
         
     public static final class Pair<F, S> {
         public F first;

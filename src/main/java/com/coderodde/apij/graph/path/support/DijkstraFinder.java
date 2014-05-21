@@ -7,8 +7,8 @@ import com.coderodde.apij.graph.model.WeightFunction;
 import com.coderodde.apij.graph.path.Path;
 import com.coderodde.apij.graph.path.PathFinder;
 import com.coderodde.apij.graph.path.SearchData;
-import static com.coderodde.apij.util.Utils.checkBelongsToGraph;
 import static com.coderodde.apij.util.Utils.checkNotNull;
+import static com.coderodde.apij.util.Utils.checkSameGraphs;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -71,8 +71,7 @@ extends PathFinder<T> {
             }
         }
         
-        checkNotNull(source, "'source' is null.");
-        checkNotNull(target, "'target' is null.");
+        checkSameGraphs(source, target);
         checkNotNull(wf, "weight function is null.");
         
         OPEN.clear();

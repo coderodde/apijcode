@@ -5,6 +5,10 @@ import java.util.Map;
 
 public abstract class PathFinder<T extends Node<T>> {
   
+    protected class Hide {
+        
+    }
+    
     public static final SearchData from(final Object source) {
         return new SearchData(SearchDataType.SOURCE, source);
     }

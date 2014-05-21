@@ -12,6 +12,7 @@ import static com.coderodde.apij.graph.path.PathFinder.to;
 import static com.coderodde.apij.graph.path.PathFinder.withHeuristicFunction;
 import static com.coderodde.apij.graph.path.PathFinder.withWeightFunction;
 import com.coderodde.apij.graph.path.support.AStarFinder;
+import com.coderodde.apij.graph.path.support.BidirectionalDijkstraFinder;
 import com.coderodde.apij.graph.path.support.DijkstraFinder;
 import com.coderodde.apij.graph.path.support.EuclidianHeuristicFunction;
 import com.coderodde.apij.util.Utils;
@@ -79,6 +80,18 @@ public class Demo {
         
         tb = System.currentTimeMillis();
         System.out.println("Dijkstra time: " + (tb - ta) + " ms. Path length: " +
+                path2.getLength(data.second));
+        
+        ta = System.currentTimeMillis();
+        
+        Path<UndirectedGraphNode> path3 =
+               new BidirectionalDijkstraFinder<UndirectedGraphNode>()
+                       .search(from(source),
+                               to(target),
+                               withWeightFunction(data.second));
+        
+        tb = System.currentTimeMillis();
+        System.out.println("Bidirectional Dijkstra time: " + (tb - ta) + " ms. Path length: " +
                 path2.getLength(data.second));
 //        profileBasicAlgorithms();
     }

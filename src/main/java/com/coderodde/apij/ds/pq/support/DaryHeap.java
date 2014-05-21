@@ -237,7 +237,7 @@ implements PriorityQueue<T, P> {
     
     @Override
     public P getPriorityOf(T element) {
-        if (map.containsKey(element)) {
+        if (map.containsKey(element) == false) {
             throw new NoSuchElementException(
                     "No element '" + element.toString() + "' in this heap.");
         }
