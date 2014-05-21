@@ -23,6 +23,7 @@ import com.coderodde.apij.util.Utils.Triple;
 import static com.coderodde.apij.util.Utils.findIndexOf;
 import static com.coderodde.apij.util.Utils.findMaximum;
 import static com.coderodde.apij.util.Utils.getRandomIntegerArray;
+import static com.coderodde.apij.util.Utils.pathsAreSame;
 import static com.coderodde.apij.util.Utils.title;
 import static com.coderodde.apij.util.Utils.title2;
 import java.util.Random;
@@ -58,7 +59,7 @@ public class Demo {
                 new EuclidianHeuristicFunction<>(data.third);
         
         final UndirectedGraphNode source = data.first.getNode("1");
-        final UndirectedGraphNode target = data.first.getNode("4004");
+        final UndirectedGraphNode target = data.first.getNode("2");
         
         long ta = System.currentTimeMillis();
         PathFinder<UndirectedGraphNode> finder = new AStarFinder<>();
@@ -112,6 +113,11 @@ public class Demo {
         tb = System.currentTimeMillis();
         System.out.println("Bidirectional A* time: " + (tb - ta) + " ms. Path length: " +
                 path4.getLength(data.second));
+        
+        System.out.println("Paths are same: " + pathsAreSame(path,
+                                                             path2,
+                                                             path3,
+                                                             path4));
 //        profileBasicAlgorithms();
     }
     

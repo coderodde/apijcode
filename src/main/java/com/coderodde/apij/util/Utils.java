@@ -7,6 +7,7 @@ import com.coderodde.apij.graph.model.support.DefaultWeightFunction;
 import com.coderodde.apij.graph.model.support.UndirectedGraphNode;
 import com.coderodde.apij.graph.path.HeuristicFunction;
 import com.coderodde.apij.graph.path.Layout;
+import com.coderodde.apij.graph.path.Path;
 import com.coderodde.apij.graph.path.Point;
 import com.coderodde.apij.graph.path.support.EuclidianHeuristicFunction;
 import java.util.ArrayList;
@@ -275,6 +276,25 @@ public class Utils {
         return new Triple<>(g, wf, layout);
     }
         
+    public static final <T extends Node<T>> boolean 
+        pathsAreSame(final Path<T>... paths) {
+        for (int i = 0; i < paths.length - 1; ++i) {
+            if (paths[i].size() != paths[i + 1].size()) {
+                return false;
+            }
+        }
+        
+        for (int i = 0; i < paths[0].size(); ++i) {
+            for (int j = 0; j < paths.length - 1; ++j) {
+                if (paths[j].get(i).equals(paths[j + 1].get(i)) == false) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+                    
     /**
      * Implements the title printing functionality.
      * 
