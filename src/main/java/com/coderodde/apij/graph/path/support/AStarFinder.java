@@ -7,18 +7,19 @@ import com.coderodde.apij.graph.model.WeightFunction;
 import com.coderodde.apij.graph.path.HeuristicFunction;
 import com.coderodde.apij.graph.path.Path;
 import com.coderodde.apij.graph.path.PathFinder;
+import static com.coderodde.apij.util.Utils.checkBelongsToGraph;
 import static com.coderodde.apij.util.Utils.checkNotNull;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AStarFinder<T extends Node<T>, W extends Comparable<? super W>> 
-extends PathFinder<T, W> {
+public class AStarFinder<T extends Node<T>>
+extends PathFinder<T> {
     
     /**
      * This is the "open set". It contains the discovered, but not expanded 
      * nodes.
      */
-    private PriorityQueue<T, W> OPEN;
+    private PriorityQueue<T, Double> OPEN;
     
     /**
      * This is the "closed set". It contains the expanded nodes.
@@ -29,17 +30,18 @@ extends PathFinder<T, W> {
     
     public AStarFinder() {
         // This the default: d-ary heap with d = 2.
-        this(new DaryHeap<T, W>(2));
+        this(new DaryHeap<T, Double>(2));
     }
     
-    public AStarFinder(final PriorityQueue<T, W> heap) {
+    public AStarFinder(final PriorityQueue<T, Double> heap) {
         checkNotNull(heap, "'heap' is 'null'.");
         heap.clear();
         this.OPEN = heap;
     }
     
-    final AStarTargetSelector<T, W> from(final T source) {
+    public final AStarTargetSelector<T> from(final T source) {
         checkNotNull(source, "'source' is 'null'.");
+        checkBelongsToGraph(source);
         this.source = source;
         return new AStarTargetSelector<>(this);
     }
@@ -50,8 +52,8 @@ extends PathFinder<T, W> {
     
     Path<T> searchImpl(final T from, 
                        final T to, 
-                       final WeightFunction<T, W> wf,
-                       final HeuristicFunction<T, W> hf) {
+                       final WeightFunction<T> wf,
+                       final HeuristicFunction<T> hf) {
         System.out.println("This is A*!");
         return null;
     }

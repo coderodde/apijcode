@@ -3,30 +3,28 @@ package com.coderodde.apij.graph.path.support;
 import com.coderodde.apij.graph.model.Node;
 import com.coderodde.apij.graph.model.WeightFunction;
 import com.coderodde.apij.graph.path.HeuristicFunction;
-import com.coderodde.apij.graph.path.Path;
 import static com.coderodde.apij.util.Utils.checkNotNull;
 
-class AStarHeuristicFunctionSelector<T extends Node<T>,
-                                     W extends Comparable<? super W>>{
+public class AStarHeuristicFunctionSelector<T extends Node<T>>{
     
-    private AStarWeightFunctionSelector<T, W> weightFunctionSelector;
-    private HeuristicFunction<T, W> heuristicFunction;
+    private AStarWeightFunctionSelector<T> weightFunctionSelector;
+    private HeuristicFunction<T> heuristicFunction;
     
     AStarHeuristicFunctionSelector
-        (final AStarWeightFunctionSelector<T, W> weightFunctionSelector) {
+        (final AStarWeightFunctionSelector<T> weightFunctionSelector) {
         checkNotNull(weightFunctionSelector, 
                      "'weightFunctionSelector' is null.");
         this.weightFunctionSelector = weightFunctionSelector;
     }
         
-    AStarProxy<T, W> withHeuristicFunction
-        (final HeuristicFunction<T, W> heuristicFunction) {
+    public AStarProxy<T> withHeuristicFunction
+        (final HeuristicFunction<T> heuristicFunction) {
         checkNotNull(heuristicFunction, "'heuristicFunction' is null.");
         this.heuristicFunction = heuristicFunction;
-        return new AStarProxy<T, W>(this);
+        return new AStarProxy<T>(this);
     }
         
-    AStarFinder<T, W> getFinder() {
+    AStarFinder<T> getFinder() {
         return weightFunctionSelector.getFinder();
     }
     
@@ -38,11 +36,11 @@ class AStarHeuristicFunctionSelector<T extends Node<T>,
         return weightFunctionSelector.getTarget();
     }
     
-    WeightFunction<T, W> getWeightFunction() {
+    WeightFunction<T> getWeightFunction() {
         return weightFunctionSelector.getWeightFunction();
     }
     
-    HeuristicFunction<T, W> getHeuristicFunction() {
+    HeuristicFunction<T> getHeuristicFunction() {
         return heuristicFunction;
     }
 }

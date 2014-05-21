@@ -1,12 +1,8 @@
 package com.coderodde.apij.graph.model;
 
-/**
- *
- * @author rodionefremov
- */
-public interface WeightFunction<T extends Node<T>, W> {
+public interface WeightFunction<T extends Node<T>> {
     
-    public void put(final T from, final T to, final W weight);
+    public void put(final T from, final T to, final double weight);
     
-    public W get(final T from, final T to);
+    public double get(final T from, final T to);
 }

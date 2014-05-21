@@ -4,26 +4,26 @@ import com.coderodde.apij.graph.model.Node;
 import com.coderodde.apij.graph.model.WeightFunction;
 import static com.coderodde.apij.util.Utils.checkNotNull;
 
-class AStarWeightFunctionSelector<T extends Node<T>, 
-                                         W extends Comparable<? super W>> {
-    private final AStarTargetSelector<T, W> targetSelector;
+public class AStarWeightFunctionSelector<T extends Node<T>> {
     
-    private WeightFunction<T, W> weightFunction;
+    private final AStarTargetSelector<T> targetSelector;
+    
+    private WeightFunction<T> weightFunction;
     
     AStarWeightFunctionSelector
-        (final AStarTargetSelector<T, W> targetSelector) {
+        (final AStarTargetSelector<T> targetSelector) {
         checkNotNull(targetSelector, "'targetSelector' is null.");
         this.targetSelector = targetSelector;
     }
     
-    AStarHeuristicFunctionSelector<T, W> withWeightFunction
-            (final WeightFunction<T, W> weightFunction) {
+    public AStarHeuristicFunctionSelector<T> withWeightFunction
+            (final WeightFunction<T> weightFunction) {
         checkNotNull(weightFunction, "'weightFunction' is null.");
         this.weightFunction = weightFunction;
         return new AStarHeuristicFunctionSelector<>(this);
     }
             
-    AStarFinder<T, W> getFinder() {
+    AStarFinder<T> getFinder() {
         return targetSelector.getFinder();
     }
     
@@ -35,7 +35,7 @@ class AStarWeightFunctionSelector<T extends Node<T>,
         return targetSelector.getTarget();
     }
     
-    WeightFunction<T, W> getWeightFunction() {
+    WeightFunction<T> getWeightFunction() {
         return weightFunction;
     }
 }

@@ -1,5 +1,12 @@
 package com.coderodde.apij;
 
+import com.coderodde.apij.graph.model.Graph;
+import com.coderodde.apij.graph.model.WeightFunction;
+import com.coderodde.apij.graph.model.support.DefaultWeightFunction;
+import com.coderodde.apij.graph.model.support.UndirectedGraphNode;
+import com.coderodde.apij.graph.path.HeuristicFunction;
+import com.coderodde.apij.graph.path.Path;
+import com.coderodde.apij.graph.path.support.AStarFinder;
 import static com.coderodde.apij.util.Utils.INDEX_NOT_FOUND;
 import static com.coderodde.apij.util.Utils.findIndexOf;
 import static com.coderodde.apij.util.Utils.findMaximum;
@@ -18,14 +25,32 @@ import java.util.Random;
  */
 public class Demo {
    
-    /*
-    
-    new Dijkstra(new DAryHeap()).withSource(...).withTarget(...).search();
-    
-    */
     public static final void main(final String... args) {
+        Graph<UndirectedGraphNode> g = new Graph<>("G");
+        
+        g.add(new UndirectedGraphNode("a"));
+        g.add(new UndirectedGraphNode("b"));
+        
+        g.addEdge(g.getNode("a"), g.getNode("b"));
+        
+        WeightFunction<UndirectedGraphNode> wf =
+                new DefaultWeightFunction<>();
+        
+        HeuristicFunction<UndirectedGraphNode> hf = null;
+        
+        wf.put(g.getNode("a"), g.getNode("b"), 2);
+        
+        Path<UndirectedGraphNode> path = 
+                new AStarFinder<UndirectedGraphNode>()
+                .from(g.getNode("a"))
+                .to(g.getNode("b"))
+                .withWeightFunction(wf)
+                .withHeuristicFunction(hf)
+                .search();
         profileBasicAlgorithms();
     }
+    
+    
     
     private static final void profileBasicAlgorithms() {
         title("Basic algorithms");
