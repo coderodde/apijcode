@@ -113,6 +113,17 @@ public class Utils {
         return index;
     }
         
+    public static final <T extends Comparable<? super T>> 
+        boolean isSorted(final T[] array, int from, int to) {
+        for (int i = from; i < to; ++i) {
+            if (array[i].compareTo(array[i + 1]) > 0) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+        
     /**
      * Checks whether the array is sorted and returns <code>true</code> in case
      * <code>array</code> is sorted, and <code>false</code> otherwise.
@@ -125,26 +136,56 @@ public class Utils {
      */
     public static final <T extends Comparable<? super T>>
         boolean isSorted(final T[] array) {
-        for (int i = 0; i < array.length - 1; ++i) {
-            if (array[i].compareTo(array[i + 1]) > 0) {
+        return isSorted(array, 0, array.length - 1);
+    }
+        
+//    public static final <T extends Comparable<? super T>>
+//        boolean isSorted(final Object[] array, Comparator cmp) {
+//        for (int i = 0; i < array.length - 1; ++i) {
+//            if (cmp.compare(array[i], array[i + 1]) > 0) {
+//                return false;
+//            }
+//        }
+//        
+//        return true;
+//    }
+    
+    public static final boolean arraysSameByRef(final Object[]... arrays) {
+        for (int i = 0; i < arrays.length - 1; ++i) {
+            if (arrays[i].length != arrays[i + 1].length) {
                 return false;
             }
         }
         
-        return true;
-    }
-        
-    public static final <T extends Comparable<? super T>>
-        boolean isSorted(final Object[] array, Comparator cmp) {
-        for (int i = 0; i < array.length - 1; ++i) {
-            if (cmp.compare(array[i], array[i + 1]) > 0) {
-                return false;
+        for (int i = 0; i < arrays[0].length; ++i) {
+            for (int j = 0; j < arrays.length - 1; ++j) {
+                if (arrays[j][i] != arrays[j + 1][i]) {
+                    return false;
+                }
             }
         }
         
         return true;
     }
     
+    public static final boolean arraysSame(final Object[]... arrays) {
+        for (int i = 0; i < arrays.length - 1; ++i) {
+            if (arrays[i].length != arrays[i + 1].length) {
+                return false;
+            }
+        }
+        
+        for (int i = 0; i < arrays[0].length; ++i) {
+            for (int j = 0; j < arrays.length - 1; ++j) {
+                if (arrays[j][i].equals(arrays[j + 1][i]) == false) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+        
     /**
      * The first title.
      * 

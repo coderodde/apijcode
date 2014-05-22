@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * This class tests <code>UndirectedGraphNode</code>.
+ * This class tests <code>DirectedGraphNode</code>.
  * 
  * @author Rodion Efremov
  * @version 1.6
@@ -165,11 +165,21 @@ public class DirectedGraphNodeTest {
         
         a.clear();
         
+        assertFalse(a.isConnectedTo(b));
+        assertFalse(a.isConnectedTo(c));
+        assertFalse(a.isConnectedTo(d));
+        
+        assertFalse(b.isConnectedTo(a));
+        assertFalse(c.isConnectedTo(a));
+        assertFalse(d.isConnectedTo(a));
+        
         assertEquals(1, g.edges());
         
         c.clear();
         
         assertEquals(0, g.edges());
+        assertFalse(c.isConnectedTo(d));
+        assertFalse(d.isConnectedTo(c));
     }
     
     @Test(expected = NullPointerException.class)

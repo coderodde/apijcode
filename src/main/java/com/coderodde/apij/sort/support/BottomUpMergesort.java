@@ -112,7 +112,7 @@ public class BottomUpMergesort implements Sort {
         long tb2 = System.currentTimeMillis();
         
         System.out.println("Arrays.sort in " + (tb2 - ta2) + " ms. " +
-                           "Sorted: " + isSorted(array2, cmp));
+                           "Sorted: " + isSorted(array2));
         
         long ta = System.currentTimeMillis();
         
@@ -121,6 +121,6 @@ public class BottomUpMergesort implements Sort {
         long tb = System.currentTimeMillis();
         
         System.out.println("BottomUpMergesort in " + (tb - ta) + " ms. " +
-                           "Sorted: " + isSorted(array, cmp));
+                           "Sorted: " + isSorted(array));
     }
 }
