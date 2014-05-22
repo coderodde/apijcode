@@ -1,6 +1,7 @@
 package com.coderodde.apij.graph.path.afs.support;
 
 import com.coderodde.apij.graph.model.Node;
+import com.coderodde.apij.graph.model.support.DirectedGraphNode;
 import com.coderodde.apij.graph.path.Layout;
 import com.coderodde.apij.graph.path.afs.Partitioner;
 import static com.coderodde.apij.util.Utils.checkNotBelow;
@@ -14,7 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public class kdTree<T extends Node<T>> implements Partitioner<T> {
+public class kdTree implements Partitioner {
     
     private static final boolean X = false;
     private static final boolean Y = true;
@@ -22,44 +23,45 @@ public class kdTree<T extends Node<T>> implements Partitioner<T> {
     
     private boolean axis = X;
     
-    private int maximumNodesPerPartition;
+    private final int maximumNodesPerPartition;
     
-    private Layout<T> layout;
+    private Layout<DirectedGraphNode> layout;
     
     private Object[] nodes;
     
-    private List<Integer> separatorList;
+    private final List<Integer> separatorList;
     
-    private Comparator<T> xcmp;
+    private final Comparator<DirectedGraphNode> xcmp;
     
-    private Comparator<T> ycmp;
+    private final Comparator<DirectedGraphNode> ycmp;
     
     public kdTree(final int maximumNodesPerPartition,
-                  final Layout<T> layout) {
+                  final Layout<DirectedGraphNode> layout) {
         checkNotBelow(maximumNodesPerPartition,
                       MIN_PARTITION_SIZE,
                       "'maximumNodesPerPartition' is less than 1.");
         checkNotNull(layout, "'layout' is null.");
         this.maximumNodesPerPartition = maximumNodesPerPartition;
         this.separatorList = new ArrayList<>();
-        this.xcmp = new XComparator<>(layout);
-        this.ycmp = new YComparator<T>(layout);
+        this.xcmp = new XComparator(layout);
+        this.ycmp = new YComparator(layout);
     }
 
     @Override
-    public List<Set<T>> partition(Set<T> nodeSet) {
+    public List<Set<DirectedGraphNode>> 
+        partition(Set<DirectedGraphNode> nodeSet) {
         if (nodeSet.isEmpty()) {
-            return Collections.<Set<T>>emptyList();
+            return Collections.<Set<DirectedGraphNode>>emptyList();
         }
         
         this.separatorList.clear();
         this.axis = X;
         this.nodes = new Node[nodeSet.size()];
-        List<Set<T>> partition = new ArrayList<>();
+        List<Set<DirectedGraphNode>> partition = new ArrayList<>();
         
         int i = 0;
         
-        for (final T node : nodeSet) {
+        for (final DirectedGraphNode node : nodeSet) {
             this.nodes[i++] = node;
         }
         
@@ -88,17 +90,18 @@ public class kdTree<T extends Node<T>> implements Partitioner<T> {
     private void sort(Range r, boolean axis) {
         
     }
-    
-    private class XComparator<T extends Node<T>> implements Comparator<T> {
+
+    private class XComparator implements Comparator<DirectedGraphNode> {
         
-        private Layout<T> layout;
+        private Layout<DirectedGraphNode> layout;
         
-        XComparator(final Layout<T> layout) {
+        XComparator(final Layout<DirectedGraphNode> layout) {
             this.layout = layout;
         }
 
         @Override
-        public int compare(final T o1, final T o2) {
+        public int compare(final DirectedGraphNode o1, 
+                           final DirectedGraphNode o2) {
             final Double x1 = layout.get(o1).x;
             final Double x2 = layout.get(o2).x;
             
@@ -106,16 +109,17 @@ public class kdTree<T extends Node<T>> implements Partitioner<T> {
         }
     }
     
-    private class YComparator<T extends Node<T>> implements Comparator<T> {
+    private class YComparator implements Comparator<DirectedGraphNode> {
         
-        private Layout<T> layout;
+        private Layout<DirectedGraphNode> layout;
         
-        YComparator(final Layout<T> layout) {
+        YComparator(final Layout<DirectedGraphNode> layout) {
             this.layout = layout;
         }
 
         @Override
-        public int compare(final T o1, final T o2) {
+        public int compare(final DirectedGraphNode o1, 
+                           final DirectedGraphNode o2) {
             final Double y1 = layout.get(o1).y;
             final Double y2 = layout.get(o2).y;
             return (y1 < y2 ? -1 : (y1 > y2 ? 1 : 0));
