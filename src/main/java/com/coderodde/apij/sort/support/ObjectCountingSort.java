@@ -21,7 +21,6 @@ import java.util.Set;
  */
 public class ObjectCountingSort implements Sort {
 
-    @Override
     public <T extends Comparable<? super T>> void sort(T[] array) {
         final int N = array.length;
         final Set<T> set = new HashSet<>(N);
@@ -52,8 +51,44 @@ public class ObjectCountingSort implements Sort {
     }
 
     @Override
-    public <T> void sort(T[] array, Comparator<T> cmp) {
+    public void sort(Object[] array, Comparator cmp) {
+        sort(array, cmp, 0, array.length - 1);
+    }
+
+    @Override
+    public void sort(Object[] array, Comparator cmp, int from, int to) {
+        final int N = to - from + 1;
         
+        if (N < 2) {
+            return;
+        }
+        
+        final Set<Object> set = new HashSet<>(N);
+        final Map<Object, List<Object>> map = new HashMap<>(N);
+        
+        for (int i = from; i <= to; ++i) {
+            final Object element = array[i];
+            set.add(element);
+            
+            if (map.containsKey(element) == false) {
+                List<Object> list = new ArrayList<>();
+                list.add(element);
+                map.put(element, list);
+            } else {
+                map.get(element).add(element);
+            }
+        }
+        
+        final Object[] condensator = set.toArray();
+        Arrays.sort(condensator);
+        
+        int index = 0;
+        
+        for (final Object key : condensator) {
+            for (final Object element : map.get(key)) {
+                array[index++] = element;
+            }
+        }
     }
     
     static class Person implements Comparable<Person> {

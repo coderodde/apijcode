@@ -9,8 +9,8 @@ import java.util.Comparator;
  * @version 1.6
  */
 public interface Sort {
-   
-    public <T extends Comparable<? super T>> void sort(T[] array);
     
-    public <T> void sort(T[] array, Comparator<T> cmp);
+    public void sort(Object[] array, Comparator cmp);
+    
+    public void sort(Object[] array, Comparator cmp, int from, int to);
 }

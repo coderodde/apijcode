@@ -12,6 +12,7 @@ import com.coderodde.apij.graph.path.Point;
 import com.coderodde.apij.graph.path.support.EuclidianHeuristicFunction;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
@@ -126,6 +127,17 @@ public class Utils {
         boolean isSorted(final T[] array) {
         for (int i = 0; i < array.length - 1; ++i) {
             if (array[i].compareTo(array[i + 1]) > 0) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+        
+    public static final <T extends Comparable<? super T>>
+        boolean isSorted(final Object[] array, Comparator cmp) {
+        for (int i = 0; i < array.length - 1; ++i) {
+            if (cmp.compare(array[i], array[i + 1]) > 0) {
                 return false;
             }
         }
@@ -297,10 +309,16 @@ public class Utils {
     }
         
     public static final void checkPositive(final int i, final String msg) {
-        if (i < 1) {
+        checkNotBelow(i, 1, msg);
+    }    
+    
+    public static final void checkNotBelow(final int i, 
+                                           final int lowerBound,
+                                           final String msg) {
+        if (i < lowerBound) {
             throw new IllegalArgumentException(msg);
         }
-    }    
+    }
                     
     /**
      * Implements the title printing functionality.
