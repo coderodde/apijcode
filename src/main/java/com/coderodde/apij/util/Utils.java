@@ -4,6 +4,7 @@ import com.coderodde.apij.graph.model.Graph;
 import com.coderodde.apij.graph.model.Node;
 import com.coderodde.apij.graph.model.WeightFunction;
 import com.coderodde.apij.graph.model.support.DefaultWeightFunction;
+import com.coderodde.apij.graph.model.support.DirectedGraphNode;
 import com.coderodde.apij.graph.model.support.UndirectedGraphNode;
 import com.coderodde.apij.graph.path.HeuristicFunction;
 import com.coderodde.apij.graph.path.Layout;
@@ -12,9 +13,11 @@ import com.coderodde.apij.graph.path.Point;
 import com.coderodde.apij.graph.path.support.EuclidianHeuristicFunction;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * This class contains utility classes and methods.
@@ -297,7 +300,7 @@ public class Utils {
             layout.put(u, new Point2D.Double(x, y));
         }
         
-        int edges = (int)(size * size * edgeLoadFactor);
+        int edges = (int)(size * size * edgeLoadFactor / 2);
         
         final List<UndirectedGraphNode> list = new ArrayList<>();
         final WeightFunction<UndirectedGraphNode> wf = 
@@ -329,7 +332,92 @@ public class Utils {
         
         return new Triple<>(g, wf, layout);
     }
+    
+    public static final Triple<Graph<DirectedGraphNode>,
+                      WeightFunction<DirectedGraphNode>,
+                              Layout<DirectedGraphNode>>
+                    getRandomDirectedGraph(final String name,
+                                           final int size,
+                                           final float edgeLoadFactor,
+                                           final float lengthFactor,
+                                           final double regionWidth,
+                                           final double regionHeight,
+                                           final double maxDistance,
+                                           final Random r) {
+        final Graph<DirectedGraphNode> g = new Graph<>(name);
+        final Layout<DirectedGraphNode> layout = new Layout<>();
+        final HeuristicFunction<DirectedGraphNode> hf =
+                new EuclidianHeuristicFunction<>(layout);
         
+        for (int i = 0; i < size; ++i) {
+            final DirectedGraphNode u = new DirectedGraphNode("" + i);
+            g.add(u);
+            final double x = r.nextDouble() * regionWidth;
+            final double y = r.nextDouble() * regionHeight;
+            layout.put(u, new Point2D.Double(x, y));
+        }
+        
+        int edges = (int)(size * size * edgeLoadFactor);
+        
+        final List<DirectedGraphNode> list = new ArrayList<>();
+        final WeightFunction<DirectedGraphNode> wf = 
+                new DefaultWeightFunction<>();
+        
+        for (final DirectedGraphNode u : g) {
+            list.add(u);
+        }
+        
+        while (edges > 0) {
+            final int key1 = r.nextInt(g.size());
+            final int key2 = r.nextInt(g.size());
+            
+            if (key1 == key2) {
+                continue;
+            }
+            
+            final DirectedGraphNode node1 = list.get(key1);
+            final DirectedGraphNode node2 = list.get(key2);
+            
+            final double dist = hf.estimate(node1, node2);
+            
+            if (dist < maxDistance) {
+                node1.connectTo(node2);
+                wf.put(node1, node2, lengthFactor * dist);
+                --edges;
+            }
+        }
+        
+        return new Triple<>(g, wf, layout);
+    }
+    
+    public static final <T extends Node<T>> 
+        void checkNotNullGraph(final Collection<T> nodes) {
+        for (final T node : nodes) {
+            checkNotNull(node, "'node' is null.");
+            
+            if (node.getOwnerGraph() == null) {
+                throw new IllegalStateException(
+                "Node " + node.getName() + " has no owner graph.");
+            }
+        }
+    }
+                    
+    public static final <T extends Node<T>> void
+        nodeSetBelongsToGraph(final Collection<T> set) {
+        checkNotNullGraph(set);
+        
+        Graph<T> graph = null;
+        
+        for (final T node : set) {
+            if (graph == null) {
+                graph = node.getOwnerGraph();
+            } else if (node.getOwnerGraph() != graph) {
+                throw new IllegalStateException(
+                "Node " + node.getName() + " has no owner graph.");
+            }
+        }
+    }
+                    
     public static final <T extends Node<T>> boolean 
         pathsAreSame(final Path<T>... paths) {
         for (int i = 0; i < paths.length - 1; ++i) {

@@ -1,7 +1,10 @@
 package com.coderodde.apij.graph.model;
 
 import static com.coderodde.apij.util.Utils.checkBelongsToGraph;
+import static com.coderodde.apij.util.Utils.checkBelongsToGraph;
 import static com.coderodde.apij.util.Utils.checkNotNull;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -171,6 +174,10 @@ public class Graph<T extends Node<T>> implements Iterable<T> {
         
         map.clear();
         edgeCount = 0;
+    }
+    
+    public Collection<T> view() {
+        return Collections.<T>unmodifiableCollection(map.values());
     }
     
     /**
