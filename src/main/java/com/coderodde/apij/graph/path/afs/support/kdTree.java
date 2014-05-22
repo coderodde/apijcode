@@ -23,17 +23,11 @@ public class kdTree implements Partitioner {
     
     private static final boolean X = false;
     private static final boolean Y = true;
-    private static final int MIN_PARTITION_SIZE = 10;
-    
-    private boolean axis = X;
+    private static final int MIN_REGION_SIZE = 10;
     
     private final int maximumNodesPerPartition;
     
-    private Layout<DirectedGraphNode> layout;
-    
     private Object[] nodes;
-    
-    private final List<Integer> separatorList;
     
     private final Comparator<Object> xcmp;
     private final Comparator<Object> ycmp;
@@ -41,11 +35,10 @@ public class kdTree implements Partitioner {
     public kdTree(final int maximumNodesPerPartition,
                   final Layout<DirectedGraphNode> layout) {
         checkNotBelow(maximumNodesPerPartition,
-                      MIN_PARTITION_SIZE,
+                      MIN_REGION_SIZE,
                       "'maximumNodesPerPartition' is less than 1.");
         checkNotNull(layout, "'layout' is null.");
         this.maximumNodesPerPartition = maximumNodesPerPartition;
-        this.separatorList = new ArrayList<>();
         this.xcmp = new XComparator(layout);
         this.ycmp = new YComparator(layout);
     }
@@ -59,8 +52,6 @@ public class kdTree implements Partitioner {
         
         nodeSetBelongsToGraph(nodeSet);
         
-        this.separatorList.clear();
-        this.axis = X;
         this.nodes = new Node[nodeSet.size()];
         List<Set<DirectedGraphNode>> partition = new ArrayList<>();
         
@@ -70,17 +61,17 @@ public class kdTree implements Partitioner {
             this.nodes[i++] = node;
         }
         
-        Deque<Range> stack = new LinkedList<Range>();
+        Deque<Range> stack = new LinkedList<>();
+        List<Range> resultRanges = new ArrayList<>();
         
         stack.add(new Range(0, nodes.length - 1, X));
-        
-        List<Range> resultRanges = new ArrayList<>();
         
         while (stack.isEmpty() == false) {
             Range r = stack.removeFirst();
             
             if (r.length() > maximumNodesPerPartition) {
-                Arrays.sort(nodes, r.from, r.to, (r.axis == X ? xcmp : ycmp));
+                // "r.to + 1" as the last index is exclusive.
+                Arrays.sort(nodes, r.from, r.to + 1, (r.axis == X ? xcmp : ycmp));
                 Range[] children = r.split();
                 stack.addLast(children[0]);
                 stack.addLast(children[1]);
@@ -102,10 +93,6 @@ public class kdTree implements Partitioner {
         return partition;
     }
     
-    private void sort(Range r, boolean axis) {
-        
-    }
-
     private class XComparator implements Comparator<Object> {
         
         private Layout<DirectedGraphNode> layout;
@@ -157,7 +144,7 @@ public class kdTree implements Partitioner {
 
         Range[] split() {
             final boolean newAxis = !axis;
-            final int s = (to + from) >>> 1;
+            final int s = (to + from) / 2;
             return new Range[]{ new Range(from, s, newAxis),
                                 new Range(s + 1, to, newAxis)};
         }
