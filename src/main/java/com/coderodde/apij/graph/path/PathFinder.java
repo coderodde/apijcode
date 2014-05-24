@@ -36,7 +36,7 @@ public abstract class PathFinder<T extends Node<T>> {
     
     public abstract Path<T> search(final SearchData... data);
     
-    protected static <T extends Node<T>> Path<T> constructPath
+    public static <T extends Node<T>> Path<T> constructPath
         (final T target, final Map<T, T> parentMap) {
         Path<T> path = new Path<>();
         T current = target;
@@ -49,7 +49,7 @@ public abstract class PathFinder<T extends Node<T>> {
         return path;
     }
      
-    protected static <T extends Node<T>> Path<T> 
+    public static <T extends Node<T>> Path<T> 
         constructPathBidirectional(final T touch, 
                                    final Map<T, T> parentMapForward,
                                    final Map<T, T> parentMapBackwards) {

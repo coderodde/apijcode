@@ -6,10 +6,15 @@ import com.coderodde.apij.graph.model.Graph;
 import com.coderodde.apij.graph.model.WeightFunction;
 import com.coderodde.apij.graph.model.support.DirectedGraphNode;
 import com.coderodde.apij.graph.path.Path;
+import static com.coderodde.apij.graph.path.PathFinder.constructPath;
+import com.coderodde.apij.util.Utils.Pair;
 import static com.coderodde.apij.util.Utils.checkNotBelow;
 import static com.coderodde.apij.util.Utils.checkNotNull;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +38,8 @@ public class ArcFlagSystem {
     
     private final Map<Integer, ArcFlags> secondLevelArcFlags;
 
+    private Graph<DirectedGraphNode> graph;
+    
     /**
      * The "open set".
      */
@@ -95,6 +102,10 @@ public class ArcFlagSystem {
         while (OPEN.isEmpty() == false) {
             final DirectedGraphNode current = OPEN.extractMinimum();
             
+            if (current.equals(target)) {
+                return constructPath(target, PARENT);
+            }
+            
             for (final DirectedGraphNode child : current) {
                 if (firstLevelArcFlags.get(current, child)
                                       .get(TARGET_REGION) == false) {
@@ -128,7 +139,7 @@ public class ArcFlagSystem {
             }
         }
         
-        return null;
+        return Path.NO_PATH;
     }
 
     public void preprocess(final Graph<DirectedGraphNode> graph,
@@ -151,6 +162,8 @@ public class ArcFlagSystem {
                 MIN_PARTITION_SIZE,
                 "Second level region size is too small.");
 
+        this.graph = graph;
+        
         partitioner.setMaxNodesPerRegion(firstLevelNodesPerRegion);
 
         final List<Set<DirectedGraphNode>> firstLevelPartition
@@ -161,7 +174,6 @@ public class ArcFlagSystem {
         final List<List<Set<DirectedGraphNode>>> secondLevelPartition
                 = new ArrayList<>();
 
-        
         for (Set<DirectedGraphNode> firstLevelRegion : firstLevelPartition) {
             final List<Set<DirectedGraphNode>> subPartition
                     = partitioner.partition(firstLevelRegion);
@@ -172,6 +184,8 @@ public class ArcFlagSystem {
 
         this.firstLevelRegions = firstLevelPartition;
         this.secondLevelRegions = secondLevelPartition;
+        
+        computeArcFlags();
     }
 
     private void loadRegionMaps(final List<Set<DirectedGraphNode>> firstLevelPartition,
@@ -208,5 +222,108 @@ public class ArcFlagSystem {
 
             ++index;
         }
+    }
+
+    private void computeArcFlags() {
+        final Pair<List<Collection<DirectedGraphNode>>,
+                   List<Collection<DirectedGraphNode>>> data =
+                getBoundaryNodes();
+    }
+    
+    private boolean arcIsOverlapping(final DirectedGraphNode tail,
+                                     final DirectedGraphNode head) {
+        return firstLevelRegionMap.get(tail) != 
+               firstLevelRegionMap.get(head);
+    }
+    
+    private boolean arcIsOverlapping2ndLevel(final DirectedGraphNode tail,
+                                             final DirectedGraphNode head,
+                                             final int firstLevelRegion) {
+        RegionMap rm = secondLevelRegionMap.get(firstLevelRegion);
+        return rm.get(tail) != rm.get(head);
+    }
+    
+    private Pair<List<Collection<DirectedGraphNode>>,
+                 List<Collection<DirectedGraphNode>>> 
+            getBoundaryNodes() {
+        final List<Collection<DirectedGraphNode>> firstLevelBoundarySetList;
+        final List<Collection<DirectedGraphNode>> secondLevelBoundarySetList;
+        
+        firstLevelBoundarySetList = new ArrayList<>();
+        secondLevelBoundarySetList = new ArrayList<>();
+        
+        for (final Set<DirectedGraphNode> set : firstLevelRegions) {
+            firstLevelBoundarySetList.add(findFirstLevelBoundaryPoints(set));
+        }
+        
+        for (List<Set<DirectedGraphNode>> miniRegions : secondLevelRegions) {
+            for (final Set<DirectedGraphNode> miniRegion : miniRegions) {
+                final Iterator<DirectedGraphNode> iterator = 
+                        miniRegion.iterator();
+                
+                final DirectedGraphNode probe = iterator.next();
+                
+                secondLevelBoundarySetList.add(
+                        findSecondLevelBoundaryPoints(
+                                miniRegion,
+                                firstLevelRegionMap.get(probe)));
+            }
+        }
+        
+        return new Pair<>(firstLevelBoundarySetList,
+                          secondLevelBoundarySetList);
+    }
+
+    /**
+     * Computes the boundary nodes within a set of input nodes.
+     * 
+     * @param set the set whose boundary nodes to compute.
+     * 
+     * @return a collection of boundary nodes of <code>set</code>.
+     */
+    private Collection<DirectedGraphNode> 
+        findFirstLevelBoundaryPoints(Set<DirectedGraphNode> set) {
+            List<DirectedGraphNode> result = new ArrayList<>();
+            
+            outer:
+            for (final DirectedGraphNode node : set) {
+                for (final DirectedGraphNode parent : node.parentIterable()) {
+                    if (firstLevelRegionMap.get(node) 
+                            != firstLevelRegionMap.get(parent)) {
+                        result.add(node);
+                        continue outer;
+                    }
+                }
+            }
+            
+            return result;
+    }
+
+    /**
+     * Computes the boundary nodes of a mini-region.
+     * 
+     * @param miniRegion the mini-region whose boundary nodes to compute.
+     * @param containerRegionIndex the index of the first level region
+     * containing <code>miniRegion</code>.
+     * 
+     * @return a collection of boundary nodes of <code>miniRegioin</code>.
+     */
+    private Collection<DirectedGraphNode> 
+        findSecondLevelBoundaryPoints(final Set<DirectedGraphNode> miniRegion,
+                                      final int containerRegionIndex) {
+        final List<DirectedGraphNode> result = new ArrayList<>();
+        final RegionMap rm = secondLevelRegionMap.get(containerRegionIndex);
+        
+        outer:
+        for (final DirectedGraphNode node : miniRegion) {
+            for (final DirectedGraphNode parent : node.parentIterable()) {
+                if (rm.containsNode(parent) == false) {
+                    result.add(node);
+                    continue outer;
+                }
+            }
+        }
+        
+        return result;
     }
 }

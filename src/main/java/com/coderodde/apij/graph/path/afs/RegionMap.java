@@ -1,6 +1,7 @@
 package com.coderodde.apij.graph.path.afs;
 
 import com.coderodde.apij.graph.model.support.DirectedGraphNode;
+import static com.coderodde.apij.util.Utils.checkPositive;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +22,10 @@ class RegionMap {
     
     int get(final DirectedGraphNode node) {
         return map.get(node);
+    }
+    
+    boolean containsNode(final DirectedGraphNode node) {
+        return map.containsKey(node);
     }
     
     void clear() {
