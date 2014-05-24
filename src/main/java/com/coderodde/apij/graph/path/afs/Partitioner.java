@@ -5,9 +5,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public interface Partitioner {
+public abstract class Partitioner {
+ 
+    private static final int DEFAULT_NODES_PER_REGION = 100;
     
-    public List<Set<DirectedGraphNode>> 
+    protected int maxNodesPerRegion;
+    
+    public abstract List<Set<DirectedGraphNode>> 
         partition(Collection<DirectedGraphNode> nodes);
     
+    public void setMaxNodesPerRegion(final int maxNodesPerRegion) {
+        this.maxNodesPerRegion = maxNodesPerRegion;
+    }
 }

@@ -19,7 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public class kdTree implements Partitioner {
+public class kdTreePartitioner extends Partitioner {
     
     private static final boolean X = false;
     private static final boolean Y = true;
@@ -32,7 +32,7 @@ public class kdTree implements Partitioner {
     private final Comparator<Object> xcmp;
     private final Comparator<Object> ycmp;
     
-    public kdTree(final int maximumNodesPerPartition,
+    public kdTreePartitioner(final int maximumNodesPerPartition,
                   final Layout<DirectedGraphNode> layout) {
         checkNotBelow(maximumNodesPerPartition,
                       MIN_REGION_SIZE,

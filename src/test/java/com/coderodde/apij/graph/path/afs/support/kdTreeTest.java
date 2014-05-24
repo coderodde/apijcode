@@ -27,7 +27,7 @@ public class kdTreeTest {
     private final Layout<DirectedGraphNode> layout;
     private final Graph<DirectedGraphNode> graph;
     
-    private kdTree tree;
+    private kdTreePartitioner tree;
 
     public kdTreeTest() {
         Triple<Graph<DirectedGraphNode>,
@@ -49,7 +49,7 @@ public class kdTreeTest {
     @Test
     public void testPartition() {
         final int MAX_NODES_PER_PARTITION = 10;
-        tree = new kdTree(MAX_NODES_PER_PARTITION, layout);
+        tree = new kdTreePartitioner(MAX_NODES_PER_PARTITION, layout);
         List<Set<DirectedGraphNode>> setList = tree.partition(graph.view());
         int total = 0;
         
@@ -103,17 +103,13 @@ public class kdTreeTest {
             
             if (top > p.y) {
                 top = p.y;
-            }
-            
-            if (bottom < p.y) {
+            } else if (bottom < p.y) {
                 bottom = p.y;
             }
             
             if (left > p.x) {
                 left = p.x;
-            } 
-            
-            if (right < p.x) {
+            } else if (right < p.x) {
                 right = p.x;
             }
         }
