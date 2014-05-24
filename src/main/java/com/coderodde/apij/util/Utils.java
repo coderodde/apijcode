@@ -417,7 +417,7 @@ public class Utils {
             }
         }
     }
-                    
+        
     public static final <T extends Node<T>> boolean 
         pathsAreSame(final Path<T>... paths) {
         for (int i = 0; i < paths.length - 1; ++i) {

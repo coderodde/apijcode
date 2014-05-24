@@ -2,13 +2,20 @@ package com.coderodde.apij.graph.model;
 
 import static com.coderodde.apij.util.Utils.checkBelongsToGraph;
 import static com.coderodde.apij.util.Utils.checkBelongsToGraph;
+import static com.coderodde.apij.util.Utils.checkBelongsToGraph;
+import static com.coderodde.apij.util.Utils.checkBelongsToGraph;
+import static com.coderodde.apij.util.Utils.checkBelongsToGraph;
 import static com.coderodde.apij.util.Utils.checkNotNull;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * This class implements graphs.
@@ -178,6 +185,50 @@ public class Graph<T extends Node<T>> implements Iterable<T> {
     
     public Collection<T> view() {
         return Collections.<T>unmodifiableCollection(map.values());
+    }
+    
+    public boolean isConnected() {
+        if (this.size() < 2) {
+            return true;
+        }
+        
+        final Iterator<T> iterator = this.iterator();
+        final T source = iterator.next();
+        
+        Deque<T> queue = new LinkedList<>();
+        Set<T> visited = new HashSet<T>();
+        
+        queue.addLast(source);
+        visited.add(source);
+        
+        while (queue.isEmpty() == false) {
+            final T current = queue.removeFirst();
+            
+            for (final T child : current) {
+                if (visited.contains(child) == false) {
+                    visited.add(child);
+                    queue.addLast(child);
+                }
+            }
+        }
+        
+        if (visited.size() != this.size()) {
+            return false;
+        }
+        
+        for (final T node : visited) {
+            if (this.containsNode(node) == false) {
+                return false;
+            }
+        }
+        
+        for (final T node : this) {
+            if (visited.contains(node) == false) {
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     /**

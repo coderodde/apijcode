@@ -207,6 +207,19 @@ public class GraphTest {
         assertEquals(0, g.size());
     }
     
+    public void testIsConnected() {
+        g.add(a);
+        g.add(b);
+        g.add(c);
+        g.addEdge(a, b);
+        
+        assertFalse(g.isConnected());
+        
+        g.addEdge(a, c);
+        
+        assertTrue(g.isConnected());
+    }
+    
     @Test(expected = NullPointerException.class)
     public void testAddEdgeFirstArgNotNull() {
         g.addEdge(null, a);
