@@ -65,8 +65,7 @@ public class Demo {
         final DirectedGraphNode target = data.first.getNode("2");
         
         long ta = System.currentTimeMillis();
-        PathFinder<DirectedGraphNode> finder = 
-                new BidirectionalDijkstraFinder<>();
+        PathFinder<DirectedGraphNode> finder = new DijkstraFinder<>();
         
         Path<DirectedGraphNode> path = 
                 finder.search(from(source),
@@ -78,19 +77,14 @@ public class Demo {
         System.out.println(
                 finder.getClass().getSimpleName() + ": " + (tb - ta) + " ms.");
         
-        ArcFlagSystem afs = new ArcFlagSystem(data.second);
+        ArcFlagSystem afs = 
+                new ArcFlagSystem(new kdTreePartitioner(30, data.third));
         
-        ta = System.currentTimeMillis();
-        
-        afs.preprocess(data.first, 
-                       new kdTreePartitioner(100, data.third), 
-                       100, 
-                       10);
-        
-        tb = System.currentTimeMillis();
+        long duration = afs.preprocess(data.first,
+                                       data.second);
         
         System.out.println("Arc-flag Dijkstra system preprocessed in " +
-                           (tb - ta) + " ms.");
+                           duration + " ms.");
         
         ta = System.currentTimeMillis();
         
@@ -102,6 +96,8 @@ public class Demo {
         
         System.out.println("Dijkstra's algorithm with arc-flags: " + (tb - ta) +
                            " ms.");
+        
+        System.out.println("Paths are identical: " + pathsAreSame(path, path2));
     }
     
     private static final void shit() {

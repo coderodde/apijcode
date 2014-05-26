@@ -172,6 +172,11 @@ public class DirectedGraphNode extends Node<DirectedGraphNode> {
         return name.hashCode();
     }
     
+    @Override
+    public String toString() {
+        return "[Node " + getName() + "]";
+    }
+    
     /**
      * This inner class implements the iterator over enclosing's node's 
      * children.

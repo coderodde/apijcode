@@ -49,24 +49,24 @@ public class kdTreeTest {
     public void testPartition() {
         final int MAX_NODES_PER_PARTITION = 10;
         tree = new kdTreePartitioner(MAX_NODES_PER_PARTITION, layout);
-        List<Set<DirectedGraphNode>> setList = tree.partition(graph.view());
+        List<List<DirectedGraphNode>> listList = tree.partition(graph.view());
         int total = 0;
         
-        for (final Set<DirectedGraphNode> set : setList) {
+        for (final List<DirectedGraphNode> set : listList) {
             total += set.size();
             assertTrue(set.size() <= MAX_NODES_PER_PARTITION);
         }
         
         assertEquals(GRAPH_SIZE, total);
-        assertTrue(isValidSeparation(setList));
+        assertTrue(isValidSeparation(listList));
     }
     
     private boolean isValidSeparation
-        (final List<Set<DirectedGraphNode>> setList) {
-        List<Rectangle2D.Double> rectangles = new ArrayList<>(setList.size());
+        (final List<List<DirectedGraphNode>> listList) {
+        List<Rectangle2D.Double> rectangles = new ArrayList<>(listList.size());
         
-        for (final Set<DirectedGraphNode> set : setList) {
-            rectangles.add(setToRectangle(set));
+        for (final List<DirectedGraphNode> list : listList) {
+            rectangles.add(setToRectangle(list));
         }
         
         for (int i = 0; i < rectangles.size() - 1; ++i) {
@@ -82,14 +82,8 @@ public class kdTreeTest {
     }
         
     private Rectangle2D.Double setToRectangle
-        (final Set<DirectedGraphNode> set) {
-        Iterator<DirectedGraphNode> iterator = set.iterator();
-        
-        if (iterator.hasNext() == false) {
-            throw new IllegalStateException("Set is empty.");
-        }
-        
-        Point2D.Double p = layout.get(iterator.next());
+        (final List<DirectedGraphNode> list) {
+        Point2D.Double p = layout.get(list.get(0));
         
         double top = p.y;
         double bottom = p.y;
@@ -97,8 +91,8 @@ public class kdTreeTest {
         double left = p.x;
         double right = p.x;
         
-        while (iterator.hasNext()) {
-            p = layout.get(iterator.next());
+        for (final DirectedGraphNode node : list) {
+            p = layout.get(node);
             
             if (top > p.y) {
                 top = p.y;
