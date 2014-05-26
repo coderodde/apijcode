@@ -46,8 +46,8 @@ public class Demo {
     }
 
     private static void profileDirectedGraphShortestPathAlgorithms() {
-        final int GRAPH_SIZE = 1000;
-        final long SEED = 313L;
+        final int GRAPH_SIZE = 500;
+        final long SEED = System.currentTimeMillis();
         final Random r = new Random(SEED);
         
         final Triple<Graph<DirectedGraphNode>,
@@ -72,13 +72,27 @@ public class Demo {
                               to(target),
                               withWeightFunction(data.second));
         
-        long tb = System.currentTimeMillis();
+        long tb = System.currentTimeMillis();        
         
         System.out.println(
                 finder.getClass().getSimpleName() + ": " + (tb - ta) + " ms.");
         
+        ta = System.currentTimeMillis();
+        PathFinder<DirectedGraphNode> finder2 = 
+                new BidirectionalDijkstraFinder<>();
+        
+        Path<DirectedGraphNode> path2 =
+                finder2.search(from(source),
+                               to(target),
+                               withWeightFunction(data.second));
+        
+        tb = System.currentTimeMillis();
+        
+        System.out.println(
+                finder2.getClass().getSimpleName() + ": " + (tb - ta) + " ms.");
+        
         ArcFlagSystem afs = 
-                new ArcFlagSystem(new kdTreePartitioner(30, data.third));
+                new ArcFlagSystem(new kdTreePartitioner(25, data.third));
         
         long duration = afs.preprocess(data.first,
                                        data.second);
@@ -88,7 +102,7 @@ public class Demo {
         
         ta = System.currentTimeMillis();
         
-        Path<DirectedGraphNode> path2 = afs.search(source,
+        Path<DirectedGraphNode> path3 = afs.search(source,
                                                    target,
                                                    data.second);
         
@@ -97,7 +111,8 @@ public class Demo {
         System.out.println("Dijkstra's algorithm with arc-flags: " + (tb - ta) +
                            " ms.");
         
-        System.out.println("Paths are identical: " + pathsAreSame(path, path2));
+        System.out.println(
+                "Paths are identical: " + pathsAreSame(path, path2, path3));
     }
     
     private static final void shit() {

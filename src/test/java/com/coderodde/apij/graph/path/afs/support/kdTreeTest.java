@@ -9,16 +9,16 @@ import static com.coderodde.apij.util.Utils.getRandomDirectedGraph;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
 /**
- *
- * @author rodionefremov
+ * This class tests <code>kdTreePartitioner</code>.
+ * 
+ * @author Rodion Efremov
+ * @version 1.6
  */
 public class kdTreeTest {
    
