@@ -339,7 +339,6 @@ public class Utils {
                     getRandomDirectedGraph(final String name,
                                            final int size,
                                            final float edgeLoadFactor,
-                                           final float lengthFactor,
                                            final double regionWidth,
                                            final double regionHeight,
                                            final double maxDistance,
@@ -382,7 +381,7 @@ public class Utils {
             
             if (dist < maxDistance) {
                 node1.connectTo(node2);
-                wf.put(node1, node2, lengthFactor * dist);
+                wf.put(node1, node2, dist);
                 --edges;
             }
         }

@@ -45,6 +45,8 @@ public class ArcFlagSystem {
      */
     private PriorityQueue<DirectedGraphNode, Double> OPEN;
     
+    private Set<DirectedGraphNode> CLOSED;
+    
     /**
      * The map mapping each discovered node to its shortest path length 
      * estimate.
@@ -57,8 +59,16 @@ public class ArcFlagSystem {
     
     private List<List<Set<DirectedGraphNode>>> secondLevelRegions;
     
-    public ArcFlagSystem(final PriorityQueue<DirectedGraphNode, Double> queue) {
+    private WeightFunction<DirectedGraphNode> weightFunction;
+    
+    public ArcFlagSystem(final PriorityQueue<DirectedGraphNode, Double> queue,
+                         final WeightFunction<DirectedGraphNode> weightFunction) 
+    {
         checkNotNull(queue, "'queue' is null.");
+        checkNotNull(weightFunction, "'weightFunction' is null.");
+        
+        this.weightFunction = weightFunction;
+        
         this.firstLevelRegionMap = new RegionMap();
         this.secondLevelRegionMap = new HashMap<>();
         
@@ -66,12 +76,14 @@ public class ArcFlagSystem {
         this.secondLevelArcFlags = new HashMap<>();
         
         this.OPEN = queue;
+        this.CLOSED = new HashSet<>();
         this.GSCORE = new HashMap<>();
         this.PARENT = new HashMap<>();
     }
 
-    public ArcFlagSystem() {
-        this(new DaryHeap<DirectedGraphNode, Double>());
+    public ArcFlagSystem(final WeightFunction<DirectedGraphNode> weightFunction) 
+    {
+        this(new DaryHeap<DirectedGraphNode, Double>(), weightFunction);
     }
 
     /**
@@ -228,19 +240,20 @@ public class ArcFlagSystem {
         final Pair<List<Collection<DirectedGraphNode>>,
                    List<Collection<DirectedGraphNode>>> data =
                 getBoundaryNodes();
-    }
-    
-    private boolean arcIsOverlapping(final DirectedGraphNode tail,
-                                     final DirectedGraphNode head) {
-        return firstLevelRegionMap.get(tail) != 
-               firstLevelRegionMap.get(head);
-    }
-    
-    private boolean arcIsOverlapping2ndLevel(final DirectedGraphNode tail,
-                                             final DirectedGraphNode head,
-                                             final int firstLevelRegion) {
-        RegionMap rm = secondLevelRegionMap.get(firstLevelRegion);
-        return rm.get(tail) != rm.get(head);
+        
+        for (final Collection<DirectedGraphNode> boundaryNodes : data.first) {
+            for (final DirectedGraphNode boundaryNode : boundaryNodes) {
+                setArcFlagsFromBoundarNode(boundaryNode);
+            }
+        }
+        
+        for (final Collection<DirectedGraphNode> boundaryNodes : data.second) {
+            for (final DirectedGraphNode boundaryNode : boundaryNodes) {
+                this.setArcFlagsFromBoundarNode(boundaryNode, 
+                                                firstLevelRegionMap
+                                                .get(boundaryNode));
+            }
+        }
     }
     
     private Pair<List<Collection<DirectedGraphNode>>,
@@ -325,5 +338,147 @@ public class ArcFlagSystem {
         }
         
         return result;
+    }
+        
+    private void setArcFlagsFromBoundarNode(final DirectedGraphNode source) {
+        final int REGION_NUMBER = firstLevelRegionMap.get(source);
+        
+        OPEN.clear();
+        CLOSED.clear();
+        GSCORE.clear();
+        
+        OPEN.add(source, 0.0);
+        GSCORE.put(source, 0.0);
+        
+        while (OPEN.isEmpty() == false) {
+            final DirectedGraphNode current = OPEN.extractMinimum();
+            
+            CLOSED.add(current);
+            
+            for (final DirectedGraphNode parent : current.parentIterable()) {
+                if (CLOSED.contains(parent)) {
+                    continue;
+                }
+                
+                final int PARENT_REGION_NUMBER = 
+                        firstLevelRegionMap.get(parent);
+                
+                if (PARENT_REGION_NUMBER == REGION_NUMBER) {
+                    
+                    continue;
+                }
+                
+                ArcFlagVector vector = firstLevelArcFlags.get(parent, current);
+                
+                if (vector == null) {
+                    firstLevelArcFlags.put(
+                            parent, 
+                            current,
+                            (vector = new ArcFlagVector(firstLevelRegions
+                                                        .size())));
+                }
+                
+                vector.set(REGION_NUMBER);
+                
+                double tmpg = GSCORE.get(current) + 
+                              weightFunction.get(parent, current);
+                
+                if (GSCORE.containsKey(parent) == false) {
+                    OPEN.add(parent, tmpg);
+                    GSCORE.put(parent, tmpg);
+                } else if (tmpg < GSCORE.get(parent)) {
+                    OPEN.decreasePriority(parent, tmpg);
+                    GSCORE.put(parent, tmpg);
+                }
+            }
+        }
+    }
+        
+    private void setArcFlagsFromBoundarNode(final DirectedGraphNode source, 
+                                            final int containerRegionIndex) {
+        
+        final int REGION_NUMBER = 
+                secondLevelRegionMap.get(containerRegionIndex).get(source);
+        
+        final Set<DirectedGraphNode> REGION = 
+                firstLevelRegions.get(containerRegionIndex);
+        
+        OPEN.clear();
+        CLOSED.clear();
+        GSCORE.clear();
+        
+        OPEN.add(source, 0.0);
+        GSCORE.put(source, 0.0);
+        
+        while (OPEN.isEmpty() == false) {
+            final DirectedGraphNode current = OPEN.extractMinimum();
+            
+            CLOSED.add(current);
+            
+            for (final DirectedGraphNode parent : current.parentIterable()) {
+                if (CLOSED.contains(parent)) {
+                    continue;
+                }
+                
+                if (REGION.contains(parent) == false) {
+                    continue;
+                }
+                
+                final int PARENT_REGION_NUMBER = secondLevelRegionMap
+                                                 .get(containerRegionIndex)
+                                                 .get(parent);
+                
+                if (PARENT_REGION_NUMBER == REGION_NUMBER) {
+                    ArcFlags arcFlags = secondLevelArcFlags
+                                        .get(containerRegionIndex);
+                    
+                    if (arcFlags == null) {
+                        secondLevelArcFlags.put(containerRegionIndex,
+                                                (arcFlags = new ArcFlags()));
+                    }
+                    
+                    ArcFlagVector vector = arcFlags.get(parent, current);
+                    
+                    if (vector == null) {
+                        vector = new ArcFlagVector(secondLevelRegions
+                                                   .get(containerRegionIndex)
+                                                   .size());
+                        arcFlags.put(parent, current, vector);
+                    }
+                    
+                    vector.set(REGION_NUMBER);
+                    continue;
+                }
+                
+                final ArcFlags arcFlags = 
+                        secondLevelArcFlags.get(containerRegionIndex);
+                
+                ArcFlagVector vector = arcFlags.get(parent, current);
+                
+                if (vector == null) {
+                    final int miniRegionCount = 
+                              secondLevelRegions
+                              .get(containerRegionIndex)
+                              .size();
+                    
+                    arcFlags.put(parent, 
+                                 current,
+                                 (vector = new ArcFlagVector(miniRegionCount)));
+                }
+                
+                vector.set(REGION_NUMBER);
+                
+                double tmpg = GSCORE.get(current) + 
+                              weightFunction.get(parent, current);
+                
+                if (GSCORE.containsKey(parent) == false) {
+                    OPEN.add(parent, tmpg);
+                    GSCORE.put(parent, tmpg);
+                } else if (tmpg < GSCORE.get(parent)) {
+                    OPEN.decreasePriority(parent, tmpg);
+                    GSCORE.put(parent, tmpg);
+                }
+            }
+        }
     }
 }

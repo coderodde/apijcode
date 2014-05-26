@@ -2,6 +2,7 @@ package com.coderodde.apij;
 
 import com.coderodde.apij.graph.model.Graph;
 import com.coderodde.apij.graph.model.WeightFunction;
+import com.coderodde.apij.graph.model.support.DirectedGraphNode;
 import com.coderodde.apij.graph.model.support.UndirectedGraphNode;
 import com.coderodde.apij.graph.path.HeuristicFunction;
 import com.coderodde.apij.graph.path.Layout;
@@ -12,6 +13,8 @@ import static com.coderodde.apij.graph.path.PathFinder.to;
 import static com.coderodde.apij.graph.path.PathFinder.withBackwardHeuristicFunction;
 import static com.coderodde.apij.graph.path.PathFinder.withHeuristicFunction;
 import static com.coderodde.apij.graph.path.PathFinder.withWeightFunction;
+import com.coderodde.apij.graph.path.afs.ArcFlagSystem;
+import com.coderodde.apij.graph.path.afs.support.kdTreePartitioner;
 import com.coderodde.apij.graph.path.support.AStarFinder;
 import com.coderodde.apij.graph.path.support.BidirectionalAStarFinder;
 import com.coderodde.apij.graph.path.support.BidirectionalDijkstraFinder;
@@ -39,7 +42,69 @@ import java.util.Random;
 public class Demo {
    
     public static final void main(final String... args) {
+        profileDirectedGraphShortestPathAlgorithms();
+    }
+
+    private static void profileDirectedGraphShortestPathAlgorithms() {
+        final int GRAPH_SIZE = 1000;
+        final long SEED = 313L;
+        final Random r = new Random(SEED);
         
+        final Triple<Graph<DirectedGraphNode>,
+            WeightFunction<DirectedGraphNode>,
+                    Layout<DirectedGraphNode>> data =
+                Utils.getRandomDirectedGraph("Graph1",
+                                             GRAPH_SIZE, 
+                                             0.03f,
+                                             100.0f,
+                                             100.0f,
+                                             10.0f,
+                                             r);
+         
+        final DirectedGraphNode source = data.first.getNode("1");
+        final DirectedGraphNode target = data.first.getNode("2");
+        
+        long ta = System.currentTimeMillis();
+        PathFinder<DirectedGraphNode> finder = 
+                new BidirectionalDijkstraFinder<>();
+        
+        Path<DirectedGraphNode> path = 
+                finder.search(from(source),
+                              to(target),
+                              withWeightFunction(data.second));
+        
+        long tb = System.currentTimeMillis();
+        
+        System.out.println(
+                finder.getClass().getSimpleName() + ": " + (tb - ta) + " ms.");
+        
+        ArcFlagSystem afs = new ArcFlagSystem(data.second);
+        
+        ta = System.currentTimeMillis();
+        
+        afs.preprocess(data.first, 
+                       new kdTreePartitioner(100, data.third), 
+                       100, 
+                       10);
+        
+        tb = System.currentTimeMillis();
+        
+        System.out.println("Arc-flag Dijkstra system preprocessed in " +
+                           (tb - ta) + " ms.");
+        
+        ta = System.currentTimeMillis();
+        
+        Path<DirectedGraphNode> path2 = afs.search(source,
+                                                   target,
+                                                   data.second);
+        
+        tb = System.currentTimeMillis();
+        
+        System.out.println("Dijkstra's algorithm with arc-flags: " + (tb - ta) +
+                           " ms.");
+    }
+    
+    private static final void shit() {
         Triple<Graph<UndirectedGraphNode>,
       WeightFunction<UndirectedGraphNode>,
               Layout<UndirectedGraphNode>> data =

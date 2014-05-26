@@ -24,6 +24,10 @@ class ArcFlags {
     
     ArcFlagVector get(final DirectedGraphNode tail,
                       final DirectedGraphNode head) {
+        if (map.containsKey(tail) == false) {
+            return null;
+        }
+        
         return map.get(tail).get(head);
     }
     

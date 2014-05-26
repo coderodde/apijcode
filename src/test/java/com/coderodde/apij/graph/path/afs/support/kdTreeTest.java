@@ -36,7 +36,6 @@ public class kdTreeTest {
                getRandomDirectedGraph("Graph",
                                       GRAPH_SIZE,
                                       0.5f,
-                                      1.3f,
                                       20.0,
                                       20.0,
                                       10.0,
