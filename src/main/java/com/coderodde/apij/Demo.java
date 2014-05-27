@@ -48,8 +48,9 @@ public class Demo {
     }
 
     private static void profileDirectedGraphShortestPathAlgorithms() {
-        final int GRAPH_SIZE = 5000;
-        final long SEED = 1401184740657L; //System.currentTimeMillis();
+        final int GRAPH_SIZE = 10000;
+        //1401184740657L
+        final long SEED = System.currentTimeMillis();
         final Random r = new Random(SEED);
         final double HEIGHT = 100.0;
         final double WIDTH = 100.0;
@@ -61,7 +62,7 @@ public class Demo {
                     Layout<DirectedGraphNode>> data =
                 Utils.getRandomDirectedGraph("Graph1",
                                              GRAPH_SIZE, 
-                                             0.003f,
+                                             0.001f,
                                              100.0f,
                                              100.0f,
                                              6.0f,
@@ -73,7 +74,7 @@ public class Demo {
                                             data.third);
         
         final DirectedGraphNode target = getClosestNodeTo(
-                                            new Point2D.Double(WIDTH / 2, HEIGHT / 2),
+                                            new Point2D.Double(WIDTH, HEIGHT),
                                             data.first,
                                             data.third);
         
@@ -105,7 +106,7 @@ public class Demo {
                 finder2.getClass().getSimpleName() + ": " + (tb - ta) + " ms.");
         
         ArcFlagSystem afs = 
-                new ArcFlagSystem(new kdTreePartitioner(100, data.third));
+                new ArcFlagSystem(new kdTreePartitioner(300, data.third));
         
         long duration = afs.preprocess(data.first,
                                        data.second);

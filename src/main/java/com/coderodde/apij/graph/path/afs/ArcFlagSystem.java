@@ -60,6 +60,7 @@ public class ArcFlagSystem {
         OPEN.add(source, 0.0);
         GSCORE.put(source, 0.0);
         PARENT.put(source, null);
+        Set<DirectedGraphNode> CLOSED = new HashSet<>();
         
         final int TARGET_REGION_NUMBER = regionMap.get(target);
         
@@ -71,7 +72,13 @@ public class ArcFlagSystem {
                        <DirectedGraphNode>constructPath(target, PARENT);
             }
             
+            CLOSED.add(current);
+            
             for (final DirectedGraphNode child : current) {
+                if (CLOSED.contains(child)) {
+                    continue;
+                }
+                
                 if (!arcFlags.get(current, child).get(TARGET_REGION_NUMBER)) {
                     continue;
                 }
