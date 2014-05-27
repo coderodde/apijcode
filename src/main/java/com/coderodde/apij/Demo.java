@@ -29,6 +29,8 @@ import static com.coderodde.apij.util.Utils.getRandomIntegerArray;
 import static com.coderodde.apij.util.Utils.pathsAreSame;
 import static com.coderodde.apij.util.Utils.title;
 import static com.coderodde.apij.util.Utils.title2;
+import static com.coderodde.apij.util.Utils.getClosestNodeTo;
+import java.awt.geom.Point2D;
 import java.util.Random;
 
 
@@ -46,23 +48,34 @@ public class Demo {
     }
 
     private static void profileDirectedGraphShortestPathAlgorithms() {
-        final int GRAPH_SIZE = 500;
-        final long SEED = System.currentTimeMillis();
+        final int GRAPH_SIZE = 5000;
+        final long SEED = 1401184740657L; //System.currentTimeMillis();
         final Random r = new Random(SEED);
+        final double HEIGHT = 100.0;
+        final double WIDTH = 100.0;
+        
+        System.out.println("Seed: " + SEED);
         
         final Triple<Graph<DirectedGraphNode>,
             WeightFunction<DirectedGraphNode>,
                     Layout<DirectedGraphNode>> data =
                 Utils.getRandomDirectedGraph("Graph1",
                                              GRAPH_SIZE, 
-                                             0.03f,
+                                             0.003f,
                                              100.0f,
                                              100.0f,
-                                             10.0f,
+                                             6.0f,
                                              r);
          
-        final DirectedGraphNode source = data.first.getNode("1");
-        final DirectedGraphNode target = data.first.getNode("2");
+        final DirectedGraphNode source = getClosestNodeTo(
+                                            new Point2D.Double(0, 0), 
+                                            data.first,
+                                            data.third);
+        
+        final DirectedGraphNode target = getClosestNodeTo(
+                                            new Point2D.Double(WIDTH / 2, HEIGHT / 2),
+                                            data.first,
+                                            data.third);
         
         long ta = System.currentTimeMillis();
         PathFinder<DirectedGraphNode> finder = new DijkstraFinder<>();
@@ -92,7 +105,7 @@ public class Demo {
                 finder2.getClass().getSimpleName() + ": " + (tb - ta) + " ms.");
         
         ArcFlagSystem afs = 
-                new ArcFlagSystem(new kdTreePartitioner(25, data.third));
+                new ArcFlagSystem(new kdTreePartitioner(100, data.third));
         
         long duration = afs.preprocess(data.first,
                                        data.second);
@@ -113,6 +126,10 @@ public class Demo {
         
         System.out.println(
                 "Paths are identical: " + pathsAreSame(path, path2, path3));
+        
+        System.out.println(path.getLength(data.second));
+        System.out.println(path2.getLength(data.second));
+        System.out.println(path3.getLength(data.second));
     }
     
     private static final void shit() {

@@ -24,6 +24,9 @@ class RegionMap {
     }
     
     int get(final DirectedGraphNode node) {
+        if (map.get(node) == null) {
+            System.out.println("Node: " + node);
+        }
         return map.get(node);
     }
     

@@ -15,6 +15,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -333,6 +334,25 @@ public class Utils {
         return new Triple<>(g, wf, layout);
     }
     
+    public static final <T extends Node<T>> T 
+        getClosestNodeTo(final Point2D.Double p, 
+                         final Graph<T> graph,
+                         final Layout<T> layout) {
+        T closest = null;
+        HeuristicFunction<T> h = new EuclidianHeuristicFunction<>(layout);
+        
+        for (final T node : graph) {
+            if (closest == null) {
+                closest = node;
+            } else if (h.estimate(p, layout.get(closest))
+                     > h.estimate(p, layout.get(node))) {
+                closest = node;
+            }
+        }
+        
+        return closest;
+    }
+                    
     public static final Triple<Graph<DirectedGraphNode>,
                       WeightFunction<DirectedGraphNode>,
                               Layout<DirectedGraphNode>>

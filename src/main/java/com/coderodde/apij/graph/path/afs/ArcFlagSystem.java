@@ -59,6 +59,7 @@ public class ArcFlagSystem {
         
         OPEN.add(source, 0.0);
         GSCORE.put(source, 0.0);
+        PARENT.put(source, null);
         
         final int TARGET_REGION_NUMBER = regionMap.get(target);
         
@@ -104,16 +105,17 @@ public class ArcFlagSystem {
         for (final List<DirectedGraphNode> region : partition) {
             for (final DirectedGraphNode node : region) {
                 regionMap.put(node, index);
-                setInnerFlags(region, index);
             }
             
-            ++index;
+            setInnerFlags(region, index++);
         }
         
         final List<List<DirectedGraphNode>> boundaryPointListList =
                 findBoundaryPoints();
         
         for (final List<DirectedGraphNode> region : boundaryPointListList) {
+            GSCORE.clear();
+            
             for (final DirectedGraphNode boundaryPoint : region) {
                 computeArcFlags(boundaryPoint);
             }
@@ -125,34 +127,29 @@ public class ArcFlagSystem {
     private void computeArcFlags(final DirectedGraphNode source) {
         OPEN.clear();
         CLOSED.clear();
-        GSCORE.clear();
-        
+
         OPEN.add(source, 0.0);
         GSCORE.put(source, 0.0);
-        
+
         final int TARGET_REGION_NUMBER = regionMap.get(source);
-        
+
         while (OPEN.isEmpty() == false) {
             final DirectedGraphNode current = OPEN.extractMinimum();
-            
+
             CLOSED.add(current);
-            
+
             for (final DirectedGraphNode parent : current.parentIterable()) {
-                if (CLOSED.contains(parent)) {
-                    continue;
-                }
-                
                 ArcFlagVector afv = arcFlags.get(parent, current);
-                
+
                 if (afv == null) {
                     afv = new ArcFlagVector(regionMap.size());
                     arcFlags.put(parent, current, afv);
                 }
-                
+
                 afv.set(TARGET_REGION_NUMBER);
-                
+
                 double tmpg = GSCORE.get(current) + w.get(parent, current);
-                
+
                 if (GSCORE.containsKey(parent) == false) {
                     GSCORE.put(parent, tmpg);
                     OPEN.add(parent, tmpg);
@@ -163,7 +160,7 @@ public class ArcFlagSystem {
             }
         }
     }
-    
+        
     private List<List<DirectedGraphNode>> findBoundaryPoints() {
         final List<List<DirectedGraphNode>> ret = new ArrayList<>();
         
@@ -182,7 +179,7 @@ public class ArcFlagSystem {
         outer: 
         for (final DirectedGraphNode node : region) {
             for (final DirectedGraphNode parent : node.parentIterable()) {
-                if (setView.contains(parent)) {
+                if (setView.contains(parent) == false) {
                     ret.add(node);
                     continue outer;
                 }

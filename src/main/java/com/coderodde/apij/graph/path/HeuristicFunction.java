@@ -22,4 +22,11 @@ public abstract class HeuristicFunction<T extends Node<T>> {
     public abstract double estimateFrom(final T from);
     
     public abstract double estimate(final T from, final T to);
+    
+    public static final double estimate(final Point2D.Double p1, 
+                                        final Point2D.Double p2) {
+        final double dx = p1.x - p2.x;
+        final double dy = p1.y - p2.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
 }
