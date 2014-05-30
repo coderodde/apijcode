@@ -9,6 +9,7 @@ import com.coderodde.apij.graph.path.Path;
 import com.coderodde.apij.graph.path.PathFinder;
 import static com.coderodde.apij.util.Utils.checkNotNull;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -20,12 +21,13 @@ public class ArcFlagSystem2 {
     private Graph graph;
     private Partitioner partitioner;
     private WeightFunction<DirectedGraphNode> w;
+    private int levelTwoMaxNodes;
     
     private final ArcFlags firstLevelArcFlags;
-    private final Map<Integer, ArcFlags> secondLevelArcFlags;
+    private final List<ArcFlags> secondLevelArcFlags;
     
     private final RegionMap firstLevelRegionMap;
-    private final Map<Integer, RegionMap> secondLevelRegionMap;
+    private final List<RegionMap> secondLevelRegionMap;
     
     private final List<Set<DirectedGraphNode>> firstLevelRegions;
     private final List<List<Set<DirectedGraphNode>>> secondLevelRegions;
@@ -36,16 +38,20 @@ public class ArcFlagSystem2 {
     private final Map<DirectedGraphNode, DirectedGraphNode> PARENT;
     
     public ArcFlagSystem2
-        (final Partitioner partitioner,
+        (final Partitioner partitioner, 
+         final int levelOneMaxNodes,
+         final int levelTwoMaxNodes,
          final PriorityQueue<DirectedGraphNode, Double> queue) {
         checkNotNull(queue, "'queue' is null.");
+        partitioner.setMaxNodesPerRegion(levelOneMaxNodes);
         setPartitioner(partitioner);
+        this.levelTwoMaxNodes = levelTwoMaxNodes;
         
         this.firstLevelArcFlags = new ArcFlags();
-        this.secondLevelArcFlags = new HashMap<>();
+        this.secondLevelArcFlags = new ArrayList<>();
         
         this.firstLevelRegionMap = new RegionMap();
-        this.secondLevelRegionMap = new HashMap<>();
+        this.secondLevelRegionMap = new ArrayList<>();
         
         this.firstLevelRegions = new ArrayList<>();
         this.secondLevelRegions = new ArrayList<>();
@@ -56,8 +62,15 @@ public class ArcFlagSystem2 {
         this.PARENT = new HashMap<>();
     }
         
-    public ArcFlagSystem2(final Partitioner partitioner) {
-        this(partitioner, new DaryHeap<DirectedGraphNode, Double>());
+    public ArcFlagSystem2(final Partitioner partitioner, 
+                          final int levelOneMaxNodes,
+                          final int levelTwoMaxNodes) {
+        this(partitioner, 
+             levelOneMaxNodes,
+             levelTwoMaxNodes,
+             new DaryHeap<DirectedGraphNode, Double>());
+        this.levelTwoMaxNodes = levelTwoMaxNodes;
+        partitioner.setMaxNodesPerRegion(levelOneMaxNodes);
     }
         
     public final void setPartitioner(final Partitioner partitioner) {
@@ -137,38 +150,8 @@ public class ArcFlagSystem2 {
         this.graph = graph;
         this.w = w;
         
-        ///// First level preprocessing ////
-        
         loadFirstLevelData();
         loadSecondLevelData();
-        
-        
-        int index = 0;
-        
-        for (final Set<DirectedGraphNode> region : firstLevelRegions) {
-            for (final DirectedGraphNode node : region) {
-                firstLevelRegionMap.put(node, index++);
-            }
-            
-            setInnerFlags(region, index++);
-        }
-        
-        final List<List<DirectedGraphNode>> boundaryPointListList =
-                findBoundaryPoints();
-        
-        for (final List<DirectedGraphNode> region : boundaryPointListList) {
-            GSCORE.clear();
-            
-            for (final DirectedGraphNode boundaryPoint : region) {
-                computeArcFlags(boundaryPoint);
-            }
-        }
-        
-        //// Second level preprocessing ////
-        
-        this.secondLevelRegions.clear();
-        this.secondLevelRegionMap.clear();
-        this.secondLevelArcFlags.clear();
         
         return System.currentTimeMillis() - ta;
     }
@@ -195,12 +178,121 @@ public class ArcFlagSystem2 {
         
         for (final Set<DirectedGraphNode> regionBoundary : boundaryNodeList) {
             for (final DirectedGraphNode boundaryNode : regionBoundary) {
-                computeArcFlags(boundaryNode);
+                computeArcFlags(boundaryNode, graph.view());
+            }
+        }
+        
+        for (final Set<DirectedGraphNode> region : firstLevelRegions) {
+            setInnerFlags(region);
+        }
+    }
+    
+    private void loadSecondLevelData() {
+        secondLevelRegions.clear();
+        secondLevelArcFlags.clear();
+        secondLevelRegionMap.clear();
+        
+        int index = 0;
+        
+        for (Set<DirectedGraphNode> firstLevelRegion : firstLevelRegions) {
+            final List<Set<DirectedGraphNode>> miniRegions = 
+                    partitioner.partition(firstLevelRegion);
+            secondLevelRegions.add(miniRegions);
+            
+            final RegionMap rm = secondLevelRegionMap.get(index);
+            
+            int index2 = 0;
+            
+            for (final Set<DirectedGraphNode> miniRegion : miniRegions) {
+                for (final DirectedGraphNode node : miniRegion) {
+                    rm.put(node, index2);
+                }
+                
+                ++index2;
+            }
+            
+            ++index;
+        }
+        
+        partitioner.setMaxNodesPerRegion(levelTwoMaxNodes);
+        
+        for (Set<DirectedGraphNode> firstLevelRegion : firstLevelRegions) {
+            secondLevelRegions.add(partitioner.partition(firstLevelRegion));
+        }
+        
+        for (final List<Set<DirectedGraphNode>> region : secondLevelRegions) {
+            final List<List<Set>> boundaryNodes = 
+                    new ArrayList<>(firstLevelRegions.size());
+            
+            for (final Set<DirectedGraphNode> miniRegion : region) {
+                setInnerFlags(miniRegion);
+            }
+            
+        }
+        
+        final List<List<Set<DirectedGraphNode>>> boundaryNodes =
+                findSecondLevelBoundaryNodes();
+        
+        index = 0;
+        
+        for (final List<Set<DirectedGraphNode>> region : boundaryNodes) {
+            for (Set<DirectedGraphNode> miniRegionBoundaryNodes : region) {
+                setInnerFlags(miniRegionBoundaryNodes);
+                
+                for (DirectedGraphNode boundaryNode : miniRegionBoundaryNodes) {
+                    computeArcFlags(boundaryNode, firstLevelRegions.get(index));
+                }
+            }
+            
+            ++index;
+        }
+    }
+    
+    private void setInnerFlags(final Set<DirectedGraphNode> region) {
+        for (final DirectedGraphNode node : region) {
+            setInnerFlagsImpl(node, region);
+        }
+    }
+    
+    private void setInnerFlagsImpl(final DirectedGraphNode source,
+                                   final Set<DirectedGraphNode> region) {
+        OPEN.clear();
+        GSCORE.clear();
+        
+        OPEN.add(source, 0.0);
+        GSCORE.put(source, 0.0);
+        
+        while (OPEN.isEmpty() == false) {
+            final DirectedGraphNode current = OPEN.extractMinimum();
+            
+            for (final DirectedGraphNode parent : current.parents()) {
+                if (region.contains(parent) == false) {
+                    continue;
+                }
+                
+                ArcFlagVector afv = firstLevelArcFlags.get(parent, current);
+                
+                if (afv == null) {
+                    afv = new ArcFlagVector(firstLevelRegions.size());
+                    firstLevelArcFlags.put(parent, current, afv);
+                }
+                
+                afv.set(firstLevelRegionMap.get(source));
+                
+                double tmpg = GSCORE.get(current) + w.get(parent, current);
+                
+                if (GSCORE.containsKey(parent) == false) {
+                    GSCORE.put(parent, tmpg);
+                    OPEN.add(parent, tmpg);
+                } else if (GSCORE.get(parent) > tmpg) {
+                    GSCORE.put(parent, tmpg);
+                    OPEN.decreasePriority(parent, tmpg);
+                }
             }
         }
     }
     
-    private final List<Set<DirectedGraphNode>> findFirstLevelBoundaryNodes() {
+    private List<Set<DirectedGraphNode>> findFirstLevelBoundaryNodes() {
         final List<Set<DirectedGraphNode>> ret =
                 new ArrayList<>(firstLevelRegions.size());
         
@@ -223,13 +315,38 @@ public class ArcFlagSystem2 {
         return ret;
     }
     
-    private void loadSecondLevelData() {
+    private List<List<Set<DirectedGraphNode>>> findSecondLevelBoundaryNodes() {
+        final List<List<Set<DirectedGraphNode>>> ret = 
+                new ArrayList<>(firstLevelRegions.size());
         
+        for (final List<Set<DirectedGraphNode>> region : secondLevelRegions) {
+            final List<Set<DirectedGraphNode>> list = new ArrayList<>();
+            
+            for (final Set<DirectedGraphNode> miniRegion : region) {
+                final Set<DirectedGraphNode> set = new HashSet<>();
+                
+                label:
+                for (final DirectedGraphNode node : miniRegion) {
+                    for (final DirectedGraphNode parent : node.parents()) {
+                        if (miniRegion.contains(parent) == false) {
+                            set.add(node);
+                            continue label;
+                        }
+                    }
+                }
+                
+                list.add(set);
+            }
+            
+            ret.add(list);
+        }
+        
+        return ret;
     }
     
-    private void computeArcFlags(final DirectedGraphNode source) {
+    private void computeArcFlags(final DirectedGraphNode source, 
+                                 final Collection<DirectedGraphNode> bound) {
         OPEN.clear();
-        CLOSED.clear();
 
         OPEN.add(source, 0.0);
         GSCORE.put(source, 0.0);
@@ -238,10 +355,12 @@ public class ArcFlagSystem2 {
 
         while (OPEN.isEmpty() == false) {
             final DirectedGraphNode current = OPEN.extractMinimum();
-
-            CLOSED.add(current);
-
+            
             for (final DirectedGraphNode parent : current.parents()) {
+                if (bound.contains(parent) == false) {
+                    continue;
+                }
+                
                 ArcFlagVector afv = firstLevelArcFlags.get(parent, current);
 
                 if (afv == null) {
