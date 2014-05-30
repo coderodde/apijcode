@@ -64,7 +64,7 @@ public class UndirectedGraphNodeTest {
         
         Set<UndirectedGraphNode> set = new HashSet<>();
         
-        for (final UndirectedGraphNode u : a.parentIterable()) {
+        for (final UndirectedGraphNode u : a.parents()) {
             set.add(u);
         }
         

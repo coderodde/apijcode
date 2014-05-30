@@ -18,7 +18,7 @@ import java.util.Set;
 public class ArcFlagSystem {
     
     private Partitioner partitioner;
-    private List<List<DirectedGraphNode>> partition;
+    private List<Set<DirectedGraphNode>> regionList;
     private WeightFunction<DirectedGraphNode> w;
     private final ArcFlags arcFlags;
     private final RegionMap regionMap;
@@ -60,7 +60,7 @@ public class ArcFlagSystem {
         OPEN.add(source, 0.0);
         GSCORE.put(source, 0.0);
         PARENT.put(source, null);
-        Set<DirectedGraphNode> CLOSED = new HashSet<>();
+        CLOSED.clear();
         
         final int TARGET_REGION_NUMBER = regionMap.get(target);
         
@@ -104,12 +104,12 @@ public class ArcFlagSystem {
                            final WeightFunction<DirectedGraphNode> w) {
         final long ta = System.currentTimeMillis();
         this.w = w;
-        this.partition = partitioner.partition(graph.view());
+        this.regionList = partitioner.partition(graph.view());
         this.regionMap.clear();
         
         int index = 0;
         
-        for (final List<DirectedGraphNode> region : partition) {
+        for (final Set<DirectedGraphNode> region : regionList) {
             for (final DirectedGraphNode node : region) {
                 regionMap.put(node, index);
             }
@@ -145,7 +145,7 @@ public class ArcFlagSystem {
 
             CLOSED.add(current);
 
-            for (final DirectedGraphNode parent : current.parentIterable()) {
+            for (final DirectedGraphNode parent : current.parents()) {
                 ArcFlagVector afv = arcFlags.get(parent, current);
 
                 if (afv == null) {
@@ -171,7 +171,7 @@ public class ArcFlagSystem {
     private List<List<DirectedGraphNode>> findBoundaryPoints() {
         final List<List<DirectedGraphNode>> ret = new ArrayList<>();
         
-        for (final List<DirectedGraphNode> region : partition) {
+        for (final Set<DirectedGraphNode> region : regionList) {
             ret.add(getBoundaryPointsOfRegion(region));
         }
         
@@ -179,13 +179,13 @@ public class ArcFlagSystem {
     }
     
     private List<DirectedGraphNode> 
-        getBoundaryPointsOfRegion(final List<DirectedGraphNode> region) {
+        getBoundaryPointsOfRegion(final Set<DirectedGraphNode> region) {
         final Set<DirectedGraphNode> setView = new HashSet<>(region);
         final List<DirectedGraphNode> ret = new ArrayList<>();
         
         outer: 
         for (final DirectedGraphNode node : region) {
-            for (final DirectedGraphNode parent : node.parentIterable()) {
+            for (final DirectedGraphNode parent : node.parents()) {
                 if (setView.contains(parent) == false) {
                     ret.add(node);
                     continue outer;
@@ -196,7 +196,7 @@ public class ArcFlagSystem {
         return ret;
     }
     
-    private void setInnerFlags(final List<DirectedGraphNode> region, 
+    private void setInnerFlags(final Set<DirectedGraphNode> region, 
                                final int regionNumber) {
         final Set<DirectedGraphNode> set = new HashSet<>(region);
         
@@ -206,7 +206,7 @@ public class ArcFlagSystem {
                     ArcFlagVector afv = arcFlags.get(node, child);
                     
                     if (afv == null) {
-                        afv = new ArcFlagVector(partition.size());
+                        afv = new ArcFlagVector(regionList.size());
                         arcFlags.put(node, child, afv);
                     }
                     

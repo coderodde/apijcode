@@ -13,9 +13,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class kdTreePartitioner extends Partitioner {
     
@@ -42,16 +44,16 @@ public class kdTreePartitioner extends Partitioner {
     }
 
     @Override
-    public List<List<DirectedGraphNode>> 
+    public List<Set<DirectedGraphNode>> 
         partition(Collection<DirectedGraphNode> nodeSet) {
         if (nodeSet.isEmpty()) {
-            return Collections.<List<DirectedGraphNode>>emptyList();
+            return Collections.<Set<DirectedGraphNode>>emptyList();
         }
         
         nodeSetBelongsToGraph(nodeSet);
         
         this.nodes = new Node[nodeSet.size()];
-        List<List<DirectedGraphNode>> partition = new ArrayList<>();
+        List<Set<DirectedGraphNode>> partition = new ArrayList<>();
         
         int i = 0;
         
@@ -79,7 +81,7 @@ public class kdTreePartitioner extends Partitioner {
         }
         
         for (final Range range : resultRanges) {
-            List<DirectedGraphNode> region = new ArrayList<>(range.length());
+            Set<DirectedGraphNode> region = new HashSet<>(range.length());
             
             for (final int index : range) {
                 region.add((DirectedGraphNode) nodes[index]);

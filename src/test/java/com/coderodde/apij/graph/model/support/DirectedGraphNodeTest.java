@@ -57,7 +57,7 @@ public class DirectedGraphNodeTest {
         
         Set<DirectedGraphNode> set = new HashSet<>();
         
-        for (final DirectedGraphNode u : a.parentIterable()) {
+        for (final DirectedGraphNode u : a.parents()) {
             set.add(u);
         }
         

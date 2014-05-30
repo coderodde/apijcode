@@ -51,7 +51,7 @@ public class UndirectedGraphNode extends Node<UndirectedGraphNode> {
      * {@inheritDoc}
      */
     @Override
-    public Iterable<UndirectedGraphNode> parentIterable() {
+    public Iterable<UndirectedGraphNode> parents() {
         return new Iterable<UndirectedGraphNode>() {
             @Override
             public Iterator<UndirectedGraphNode> iterator() {

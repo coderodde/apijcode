@@ -21,7 +21,7 @@ public abstract class Node<T extends Node<T>> implements Iterable<T> {
      * 
      * @return an <code>Iterable</code> over this node's parent nodes. 
      */
-    public abstract Iterable<T> parentIterable();
+    public abstract Iterable<T> parents();
     
     /**
      * Returns the name of this node.

@@ -172,7 +172,7 @@ extends PathFinder<T> {
                 final T current = OPENB.extractMinimum();
                 CLOSEDB.add(current);
                 
-                for (final T parent : current.parentIterable()) {
+                for (final T parent : current.parents()) {
                     if (CLOSEDB.contains(parent)) {
                         continue;
                     }

@@ -57,7 +57,7 @@ public class DirectedGraphNode extends Node<DirectedGraphNode> {
      * {@inheritDoc}
      */
     @Override
-    public Iterable<DirectedGraphNode> parentIterable() {
+    public Iterable<DirectedGraphNode> parents() {
         return new Iterable<DirectedGraphNode>() {
             @Override
             public Iterator<DirectedGraphNode> iterator() {
