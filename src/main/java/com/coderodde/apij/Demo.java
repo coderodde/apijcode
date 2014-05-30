@@ -14,6 +14,7 @@ import static com.coderodde.apij.graph.path.PathFinder.withBackwardHeuristicFunc
 import static com.coderodde.apij.graph.path.PathFinder.withHeuristicFunction;
 import static com.coderodde.apij.graph.path.PathFinder.withWeightFunction;
 import com.coderodde.apij.graph.path.afs.ArcFlagSystem;
+import com.coderodde.apij.graph.path.afs.ArcFlagSystem2;
 import com.coderodde.apij.graph.path.afs.support.kdTreePartitioner;
 import com.coderodde.apij.graph.path.support.AStarFinder;
 import com.coderodde.apij.graph.path.support.BidirectionalAStarFinder;
@@ -25,11 +26,11 @@ import static com.coderodde.apij.util.Utils.INDEX_NOT_FOUND;
 import com.coderodde.apij.util.Utils.Triple;
 import static com.coderodde.apij.util.Utils.findIndexOf;
 import static com.coderodde.apij.util.Utils.findMaximum;
+import static com.coderodde.apij.util.Utils.getClosestNodeTo;
 import static com.coderodde.apij.util.Utils.getRandomIntegerArray;
 import static com.coderodde.apij.util.Utils.pathsAreSame;
 import static com.coderodde.apij.util.Utils.title;
 import static com.coderodde.apij.util.Utils.title2;
-import static com.coderodde.apij.util.Utils.getClosestNodeTo;
 import java.awt.geom.Point2D;
 import java.util.Random;
 
@@ -48,7 +49,7 @@ public class Demo {
     }
 
     private static void profileDirectedGraphShortestPathAlgorithms() {
-        final int GRAPH_SIZE = 10000;
+        final int GRAPH_SIZE = 5000;
         //1401184740657L
         final long SEED = System.currentTimeMillis();
         final Random r = new Random(SEED);
@@ -108,6 +109,11 @@ public class Demo {
         ArcFlagSystem afs = 
                 new ArcFlagSystem(new kdTreePartitioner(300, data.third));
         
+        ArcFlagSystem2 afs2 = 
+                new ArcFlagSystem2(new kdTreePartitioner(300, data.third),
+                                                         300,
+                                                         30);
+        
         long duration = afs.preprocess(data.first,
                                        data.second);
         
@@ -125,12 +131,32 @@ public class Demo {
         System.out.println("Dijkstra's algorithm with arc-flags: " + (tb - ta) +
                            " ms.");
         
+        ////
+        
+        duration = afs2.preprocess(data.first, data.second);
+                
+        
+        System.out.println("Arc-flag Dijkstra system with two-level preprocessed in " +
+                           duration + " ms.");
+        
+        ta = System.currentTimeMillis();
+        
+        Path<DirectedGraphNode> path4 = afs2.search(source,
+                                                    target,
+                                                    data.second);
+        
+        tb = System.currentTimeMillis();
+        
+        System.out.println("Dijkstra's algorithm with two-level arc-flags: " + (tb - ta) +
+                           " ms.");
+        
         System.out.println(
-                "Paths are identical: " + pathsAreSame(path, path2, path3));
+                "Paths are identical: " + pathsAreSame(path, path2, path3, path4));
         
         System.out.println(path.getLength(data.second));
         System.out.println(path2.getLength(data.second));
         System.out.println(path3.getLength(data.second));
+        System.out.println(path4.getLength(data.second));
     }
     
     private static final void shit() {

@@ -133,7 +133,6 @@ public class ArcFlagSystem {
     
     private void computeArcFlags(final DirectedGraphNode source) {
         OPEN.clear();
-        CLOSED.clear();
 
         OPEN.add(source, 0.0);
         GSCORE.put(source, 0.0);
@@ -142,8 +141,6 @@ public class ArcFlagSystem {
 
         while (OPEN.isEmpty() == false) {
             final DirectedGraphNode current = OPEN.extractMinimum();
-
-            CLOSED.add(current);
 
             for (final DirectedGraphNode parent : current.parents()) {
                 ArcFlagVector afv = arcFlags.get(parent, current);
