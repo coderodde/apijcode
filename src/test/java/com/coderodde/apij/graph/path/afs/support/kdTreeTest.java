@@ -11,6 +11,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -49,24 +50,24 @@ public class kdTreeTest {
     public void testPartition() {
         final int MAX_NODES_PER_PARTITION = 10;
         tree = new kdTreePartitioner(MAX_NODES_PER_PARTITION, layout);
-        List<List<DirectedGraphNode>> listList = tree.partition(graph.view());
+        List<Set<DirectedGraphNode>> setList = tree.partition(graph.view());
         int total = 0;
         
-        for (final List<DirectedGraphNode> set : listList) {
+        for (final Set<DirectedGraphNode> set : setList) {
             total += set.size();
             assertTrue(set.size() <= MAX_NODES_PER_PARTITION);
         }
         
         assertEquals(GRAPH_SIZE, total);
-        assertTrue(isValidSeparation(listList));
+        assertTrue(isValidSeparation(setList));
     }
     
     private boolean isValidSeparation
-        (final List<List<DirectedGraphNode>> listList) {
-        List<Rectangle2D.Double> rectangles = new ArrayList<>(listList.size());
+        (final List<Set<DirectedGraphNode>> setList) {
+        List<Rectangle2D.Double> rectangles = new ArrayList<>(setList.size());
         
-        for (final List<DirectedGraphNode> list : listList) {
-            rectangles.add(setToRectangle(list));
+        for (final Set<DirectedGraphNode> set : setList) {
+            rectangles.add(setToRectangle(set));
         }
         
         for (int i = 0; i < rectangles.size() - 1; ++i) {
@@ -82,8 +83,8 @@ public class kdTreeTest {
     }
         
     private Rectangle2D.Double setToRectangle
-        (final List<DirectedGraphNode> list) {
-        Point2D.Double p = layout.get(list.get(0));
+        (final Set<DirectedGraphNode> set) {
+        Point2D.Double p = layout.get(set.iterator().next());
         
         double top = p.y;
         double bottom = p.y;
@@ -91,7 +92,7 @@ public class kdTreeTest {
         double left = p.x;
         double right = p.x;
         
-        for (final DirectedGraphNode node : list) {
+        for (final DirectedGraphNode node : set) {
             p = layout.get(node);
             
             if (top > p.y) {

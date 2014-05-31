@@ -142,18 +142,7 @@ public class Utils {
         boolean isSorted(final T[] array) {
         return isSorted(array, 0, array.length - 1);
     }
-        
-//    public static final <T extends Comparable<? super T>>
-//        boolean isSorted(final Object[] array, Comparator cmp) {
-//        for (int i = 0; i < array.length - 1; ++i) {
-//            if (cmp.compare(array[i], array[i + 1]) > 0) {
-//                return false;
-//            }
-//        }
-//        
-//        return true;
-//    }
-    
+      
     public static final boolean arraysSameByRef(final Object[]... arrays) {
         for (int i = 0; i < arrays.length - 1; ++i) {
             if (arrays[i].length != arrays[i + 1].length) {

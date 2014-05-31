@@ -3,24 +3,17 @@ package com.coderodde.apij;
 import com.coderodde.apij.graph.model.Graph;
 import com.coderodde.apij.graph.model.WeightFunction;
 import com.coderodde.apij.graph.model.support.DirectedGraphNode;
-import com.coderodde.apij.graph.model.support.UndirectedGraphNode;
-import com.coderodde.apij.graph.path.HeuristicFunction;
 import com.coderodde.apij.graph.path.Layout;
 import com.coderodde.apij.graph.path.Path;
 import com.coderodde.apij.graph.path.PathFinder;
 import static com.coderodde.apij.graph.path.PathFinder.from;
 import static com.coderodde.apij.graph.path.PathFinder.to;
-import static com.coderodde.apij.graph.path.PathFinder.withBackwardHeuristicFunction;
-import static com.coderodde.apij.graph.path.PathFinder.withHeuristicFunction;
 import static com.coderodde.apij.graph.path.PathFinder.withWeightFunction;
 import com.coderodde.apij.graph.path.afs.ArcFlagSystem;
 import com.coderodde.apij.graph.path.afs.ArcFlagSystem2;
 import com.coderodde.apij.graph.path.afs.support.kdTreePartitioner;
-import com.coderodde.apij.graph.path.support.AStarFinder;
-import com.coderodde.apij.graph.path.support.BidirectionalAStarFinder;
 import com.coderodde.apij.graph.path.support.BidirectionalDijkstraFinder;
 import com.coderodde.apij.graph.path.support.DijkstraFinder;
-import com.coderodde.apij.graph.path.support.EuclidianHeuristicFunction;
 import com.coderodde.apij.util.Utils;
 import static com.coderodde.apij.util.Utils.INDEX_NOT_FOUND;
 import com.coderodde.apij.util.Utils.Triple;
@@ -49,25 +42,32 @@ public class Demo {
     }
 
     private static void profileDirectedGraphShortestPathAlgorithms() {
-        final int GRAPH_SIZE = 5000;
+        final int GRAPH_SIZE = 20000;
         //1401184740657L
-        final long SEED = System.currentTimeMillis();
+        final long SEED = 313L;//1401454179647L;//= System.currentTimeMillis();
         final Random r = new Random(SEED);
         final double HEIGHT = 100.0;
         final double WIDTH = 100.0;
         
         System.out.println("Seed: " + SEED);
         
+        long ta = System.currentTimeMillis();
+        
         final Triple<Graph<DirectedGraphNode>,
             WeightFunction<DirectedGraphNode>,
                     Layout<DirectedGraphNode>> data =
                 Utils.getRandomDirectedGraph("Graph1",
                                              GRAPH_SIZE, 
-                                             0.001f,
+                                             0.00045f,
                                              100.0f,
                                              100.0f,
-                                             6.0f,
+                                             3.0f,
                                              r);
+        
+        long tb = System.currentTimeMillis();
+        
+        System.out.println("Created a random directed graph in " + (tb - ta) +
+                           " ms.");
          
         final DirectedGraphNode source = getClosestNodeTo(
                                             new Point2D.Double(0, 0), 
@@ -79,7 +79,7 @@ public class Demo {
                                             data.first,
                                             data.third);
         
-        long ta = System.currentTimeMillis();
+        ta = System.currentTimeMillis();
         PathFinder<DirectedGraphNode> finder = new DijkstraFinder<>();
         
         Path<DirectedGraphNode> path = 
@@ -87,7 +87,7 @@ public class Demo {
                               to(target),
                               withWeightFunction(data.second));
         
-        long tb = System.currentTimeMillis();        
+        tb = System.currentTimeMillis();        
         
         System.out.println(
                 finder.getClass().getSimpleName() + ": " + (tb - ta) + " ms.");
@@ -107,12 +107,12 @@ public class Demo {
                 finder2.getClass().getSimpleName() + ": " + (tb - ta) + " ms.");
         
         ArcFlagSystem afs = 
-                new ArcFlagSystem(new kdTreePartitioner(300, data.third));
+                new ArcFlagSystem(new kdTreePartitioner(1000, data.third));
         
         ArcFlagSystem2 afs2 = 
-                new ArcFlagSystem2(new kdTreePartitioner(300, data.third),
-                                                         300,
-                                                         30);
+                new ArcFlagSystem2(new kdTreePartitioner(1000, data.third),
+                                                         1000,
+                                                         50);
         
         long duration = afs.preprocess(data.first,
                                        data.second);
@@ -158,90 +158,6 @@ public class Demo {
         System.out.println(path3.getLength(data.second));
         System.out.println(path4.getLength(data.second));
     }
-    
-    private static final void shit() {
-        Triple<Graph<UndirectedGraphNode>,
-      WeightFunction<UndirectedGraphNode>,
-              Layout<UndirectedGraphNode>> data =
-                Utils.getRandomUndirectedGraph("Graph",
-                                               40000,
-                                               0.0001f,
-                                               1.3f,
-                                               100.0,
-                                               50.0,
-                                               15.0,
-                                               new Random());
-        
-        HeuristicFunction<UndirectedGraphNode> hf = 
-                new EuclidianHeuristicFunction<>(data.third);
-        
-        HeuristicFunction<UndirectedGraphNode> hfb = 
-                new EuclidianHeuristicFunction<>(data.third);
-        
-        final UndirectedGraphNode source = data.first.getNode("1");
-        final UndirectedGraphNode target = data.first.getNode("2");
-        
-        long ta = System.currentTimeMillis();
-        PathFinder<UndirectedGraphNode> finder = new AStarFinder<>();
-        
-        Path<UndirectedGraphNode> path = 
-                finder.search(from(source),
-                              to(target),
-                              withWeightFunction(data.second),
-                              withHeuristicFunction(hf));
-        
-        long tb = System.currentTimeMillis();
-        
-        System.out.println("A* time: " + (tb - ta) + " ms. Path length: " + 
-                           path.getLength(data.second));
-        
-        
-        ta = System.currentTimeMillis();
-        
-        Path<UndirectedGraphNode> path2 =
-               new DijkstraFinder<UndirectedGraphNode>()
-                       .search(from(source),
-                               to(target),
-                               withWeightFunction(data.second));
-        
-        tb = System.currentTimeMillis();
-        System.out.println("Dijkstra time: " + (tb - ta) + " ms. Path length: " +
-                path2.getLength(data.second));
-        
-        ta = System.currentTimeMillis();
-        
-        Path<UndirectedGraphNode> path3 =
-               new BidirectionalDijkstraFinder<UndirectedGraphNode>()
-                       .search(from(source),
-                               to(target),
-                               withWeightFunction(data.second));
-        
-        tb = System.currentTimeMillis();
-        System.out.println("Bidirectional Dijkstra time: " + (tb - ta) + " ms. Path length: " +
-                path3.getLength(data.second));
-        
-        ta = System.currentTimeMillis();
-        
-        Path<UndirectedGraphNode> path4 =
-               new BidirectionalAStarFinder<UndirectedGraphNode>()
-                       .search(from(source),
-                               to(target),
-                               withWeightFunction(data.second),
-                               withHeuristicFunction(hf),
-                               withBackwardHeuristicFunction(hfb));
-        
-        tb = System.currentTimeMillis();
-        System.out.println("Bidirectional A* time: " + (tb - ta) + " ms. Path length: " +
-                path4.getLength(data.second));
-        
-        System.out.println("Paths are same: " + pathsAreSame(path,
-                                                             path2,
-                                                             path3,
-                                                             path4));
-//        profileBasicAlgorithms();
-    }
-    
-    
     
     private static final void profileBasicAlgorithms() {
         title("Basic algorithms");

@@ -22,10 +22,7 @@ import java.util.Set;
 public class kdTreePartitioner extends Partitioner {
     
     private static final boolean X = false;
-    private static final boolean Y = true;
     private static final int MIN_REGION_SIZE = 10;
-    
-    private final int maximumNodesPerPartition;
     
     private Object[] nodes;
     
@@ -38,7 +35,7 @@ public class kdTreePartitioner extends Partitioner {
                       MIN_REGION_SIZE,
                       "'maximumNodesPerPartition' is less than 1.");
         checkNotNull(layout, "'layout' is null.");
-        this.maximumNodesPerPartition = maximumNodesPerPartition;
+        this.maxNodesPerRegion = maximumNodesPerPartition;
         this.xcmp = new XComparator(layout);
         this.ycmp = new YComparator(layout);
     }
@@ -69,7 +66,8 @@ public class kdTreePartitioner extends Partitioner {
         while (stack.isEmpty() == false) {
             Range r = stack.removeFirst();
             
-            if (r.length() > maximumNodesPerPartition) {
+            
+            if (r.length() > this.maxNodesPerRegion) {
                 // "r.to + 1" as the last index is exclusive.
                 Arrays.sort(nodes, r.from, r.to + 1, (r.axis == X ? xcmp : ycmp));
                 Range[] children = r.split();

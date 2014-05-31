@@ -20,7 +20,7 @@ public class ArcFlagSystem2 {
     private Graph graph;
     private Partitioner partitioner;
     private WeightFunction<DirectedGraphNode> w;
-    private int levelTwoMaxNodes;
+    private final int levelTwoMaxNodes;
     
     private final ArcFlags firstLevelArcFlags;
     private final List<ArcFlags> secondLevelArcFlags;
@@ -42,8 +42,8 @@ public class ArcFlagSystem2 {
          final int levelTwoMaxNodes,
          final PriorityQueue<DirectedGraphNode, Double> queue) {
         checkNotNull(queue, "'queue' is null.");
-        partitioner.setMaxNodesPerRegion(levelOneMaxNodes);
         setPartitioner(partitioner);
+        partitioner.setMaxNodesPerRegion(levelOneMaxNodes);
         this.levelTwoMaxNodes = levelTwoMaxNodes;
         
         this.firstLevelArcFlags = new ArcFlags();
@@ -68,8 +68,6 @@ public class ArcFlagSystem2 {
              levelOneMaxNodes,
              levelTwoMaxNodes,
              new DaryHeap<DirectedGraphNode, Double>());
-        this.levelTwoMaxNodes = levelTwoMaxNodes;
-        partitioner.setMaxNodesPerRegion(levelOneMaxNodes);
     }
         
     public final void setPartitioner(final Partitioner partitioner) {
@@ -183,14 +181,13 @@ public class ArcFlagSystem2 {
                 findFirstLevelBoundaryNodes();
         
         for (final Set<DirectedGraphNode> regionBoundary : boundaryNodeList) {
-            GSCORE.clear();
-            
             for (final DirectedGraphNode boundaryNode : regionBoundary) {
                 computeArcFlags(boundaryNode);
             }
         }
         
         for (final Set<DirectedGraphNode> region : firstLevelRegions) {
+            GSCORE.clear();
             setInnerFlags(region, firstLevelArcFlags);
         }
     }
@@ -199,6 +196,7 @@ public class ArcFlagSystem2 {
         secondLevelRegions.clear();
         secondLevelArcFlags.clear();
         secondLevelRegionMap.clear();
+        partitioner.setMaxNodesPerRegion(levelTwoMaxNodes);
         
         for (Set<DirectedGraphNode> firstLevelRegion : firstLevelRegions) {
             final List<Set<DirectedGraphNode>> miniRegions = 
@@ -220,19 +218,16 @@ public class ArcFlagSystem2 {
             }
         }
         
-        partitioner.setMaxNodesPerRegion(levelTwoMaxNodes);
         int index = 0;
         
         for (final List<Set<DirectedGraphNode>> region : secondLevelRegions) {
-            GSCORE.clear();
-            
             for (final Set<DirectedGraphNode> miniRegion : region) {
                 setInnerFlags(miniRegion, secondLevelArcFlags.get(index));
             }
             
             for (final Set<DirectedGraphNode> miniRegion : region) {
-                GSCORE.clear();
                 Set<DirectedGraphNode> b = getBoundaryNodesOfRegion(miniRegion);
+                GSCORE.clear();
                 
                 for (final DirectedGraphNode node : b) {
                     computeArcFlagsSecondLevel(node, miniRegion);
@@ -255,6 +250,7 @@ public class ArcFlagSystem2 {
                                    final ArcFlags arcFlags) {
         OPEN.clear();
         OPEN.add(source, 0.0);
+        GSCORE.clear();
         GSCORE.put(source, 0.0);
         
         while (OPEN.isEmpty() == false) {
@@ -313,6 +309,7 @@ public class ArcFlagSystem2 {
     private void computeArcFlags(final DirectedGraphNode source) {
         OPEN.clear();
         OPEN.add(source, 0.0);
+//        GSCORE.clear();
         GSCORE.put(source, 0.0);
 
         final int TARGET_REGION_NUMBER = firstLevelRegionMap.get(source);
@@ -364,6 +361,7 @@ public class ArcFlagSystem2 {
         (final DirectedGraphNode source, final Set<DirectedGraphNode> bound) {
         OPEN.clear();
         OPEN.add(source, 0.0);
+//        GSCORE.clear();
         GSCORE.put(source, 0.0);
 
         final int TARGET_REGION_NUMBER = firstLevelRegionMap.get(source);
